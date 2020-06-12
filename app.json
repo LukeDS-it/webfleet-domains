@@ -1,0 +1,25 @@
+{
+  "name": "webfleet-domains",
+  "scripts": {
+
+  },
+  "env": {
+    "LOG_FORMAT": {
+      "value": "HEROKU"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1
+    }
+  },
+  "addons": [
+    "heroku-postgresql",
+    "cloudkarafka:ducky"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/scala"
+    }
+  ]
+}
