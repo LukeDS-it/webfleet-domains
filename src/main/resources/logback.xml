@@ -1,0 +1,60 @@
+<configuration>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <if condition='property("LOG_FORMAT").equals("JSON")'>
+      <then>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+          <providers>
+            <message/>
+            <mdc/>
+            <logstashMarkers/>
+            <pattern>
+              <pattern>
+                {
+                "timestamp": "%date{ISO8601}",
+                "level": "%level",
+                "class": "%replace(%logger.%M){'\.\?+|\$*\.\$.+\$+\d*|\$',''}",
+                "thread": "%thread",
+                "application": "${APPLICATION_TAG}"
+                }
+              </pattern>
+            </pattern>
+            <arguments/>
+            <stackTrace>
+              <throwableConverter
+                class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                <maxLength>2048</maxLength>
+                <shortenedClassNameLength>20</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+              </throwableConverter>
+            </stackTrace>
+          </providers>
+        </encoder>
+      </then>
+    </if>
+    <if condition='property("LOG_FORMAT").equals("HEROKU")'>
+      <then>
+        <encoder>
+          <pattern>%-5level %logger{36}:%line - %msg%n</pattern>
+        </encoder>
+      </then>
+    </if>
+    <if condition='property("LOG_FORMAT").equals("")'>
+      <then>
+        <encoder>
+          <pattern>%date %highlight(%-5level) %logger{36}:%line - %msg%n</pattern>
+        </encoder>
+      </then>
+    </if>
+  </appender>
+
+  <logger name="akka" level="WARN"/>
+  <logger name="slick" level="WARN"/>
+  <logger name="org" level="WARN"/>
+  <logger name="com" level="WARN"/>
+  <logger name="it.ldsoftware.webfleet.domains" level="INFO"/>
+
+  <root level="${LOG_LEVEL:-INFO}">
+    <appender-ref ref="STDOUT"/>
+  </root>
+</configuration>
