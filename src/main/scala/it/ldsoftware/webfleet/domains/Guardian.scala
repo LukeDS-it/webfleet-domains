@@ -30,11 +30,11 @@ object Guardian {
         .map(new ContentFlow(readJournal, appContext.offsetManager, _))
         .foreach(EventProcessor.init(system, _))
 
-      val contentService = new ActorDomainService(timeout, sharding)
+      val domainService = new ActorDomainService(timeout, sharding)
 
       val routes = new AllRoutes(
         appContext.extractor,
-        contentService,
+        domainService,
         appContext.healthService,
         appContext.readService
       ).routes

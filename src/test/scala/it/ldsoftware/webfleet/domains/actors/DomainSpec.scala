@@ -12,10 +12,12 @@ import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.wordspec.AnyWordSpecLike
 
-class DomainSpec extends ScalaTestWithActorTestKit(
-  EventSourcedBehaviorTestKit.config.withFallback(DomainSpec.config)
-)
-  with AnyWordSpecLike with BeforeAndAfterEach {
+class DomainSpec
+    extends ScalaTestWithActorTestKit(
+      EventSourcedBehaviorTestKit.config.withFallback(DomainSpec.config)
+    )
+    with AnyWordSpecLike
+    with BeforeAndAfterEach {
 
   private val rootTestKit =
     EventSourcedBehaviorTestKit[Command, Event, State](system, Domain("/"))
@@ -79,7 +81,8 @@ class DomainSpec extends ScalaTestWithActorTestKit(
       rootTestKit.runCommand[Response](Create(form, user, _))
       val result = rootTestKit.runCommand[Response](Create(form, user, _))
 
-      val alreadyExists = ValidationError("id", s"Domain id Title already exists", "id.duplicate")
+      val alreadyExists =
+        ValidationError("id", s"Domain id my-website already exists", "id.duplicate")
 
       result.reply shouldBe Domain.Invalid(List(alreadyExists))
     }
@@ -106,9 +109,9 @@ class DomainSpec extends ScalaTestWithActorTestKit(
       val result = rootTestKit.runCommand[Response](Delete(user, _))
       result.reply shouldBe Done
       result.event shouldBe Deleted(user)
-      result.state shouldBe NonExisting("Title")
+      result.state shouldBe NonExisting("my-website")
 
-      rootTestKit.runCommand[Response](Read).reply shouldBe NotFound("Title")
+      rootTestKit.runCommand[Response](Read).reply shouldBe NotFound("my-website")
     }
 
   }
@@ -131,8 +134,8 @@ class DomainSpec extends ScalaTestWithActorTestKit(
 
   def getExpectedContent(form: CreateForm, user: User): WebDomain =
     WebDomain(
-      form.title,
       form.id,
+      form.title,
       form.icon,
       Set(user.name)
     )

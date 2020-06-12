@@ -7,13 +7,13 @@ import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService,
 // $COVERAGE-OFF$ specific route tests exist, this is just an aggregate
 class AllRoutes(
     extractor: UserExtractor,
-    contentService: DomainService,
+    domainService: DomainService,
     healthService: HealthService,
     readService: DomainReadService
 ) extends Directives {
 
   def routes: Route =
-    new DomainRoutes(contentService, readService, extractor).routes ~
+    new DomainRoutes(domainService, readService, extractor).routes ~
       new HealthRoutes(healthService, extractor).routes
 
 }

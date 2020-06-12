@@ -12,7 +12,7 @@ class CustomKafkaContainer(network: Network) extends KafkaContainer with LazyLog
   configure { container =>
     container.setNetwork(network)
     container.withNetworkAliases("kafka")
-    container.withLogConsumer(new Slf4jLogConsumer(logger.underlying))
+//    container.withLogConsumer(new Slf4jLogConsumer(logger.underlying))
     container.setExposedPorts(Collections.singletonList(9093))
   }
 

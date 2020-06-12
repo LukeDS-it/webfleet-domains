@@ -31,7 +31,7 @@ class ActorDomainServiceSpec
   implicit val askTimeout: Timeout = Timeout.create(timeout)
 
   "The getDomainInfo function" should {
-    "return contents of the root content" in {
+    "return information of the domain" in {
       val sharding = mock[ClusterSharding]
       val entity = mock[EntityRef[Domain.Command]]
 
@@ -45,21 +45,7 @@ class ActorDomainServiceSpec
       subject.getDomainInfo("/").futureValue shouldBe success(expected)
     }
 
-    "return contents of the branch contents" in {
-      val sharding = mock[ClusterSharding]
-      val entity = mock[EntityRef[Domain.Command]]
-
-      val expected = defaultContent
-      when(sharding.entityRefFor(Domain.Key, "/branch")).thenReturn(entity)
-      when(entity.ask[Domain.Response](any())(any()))
-        .thenReturn(Future.successful(Domain.DomainInfo(expected)))
-
-      val subject = new ActorDomainService(timeout, sharding)
-
-      subject.getDomainInfo("/branch").futureValue shouldBe success(expected)
-    }
-
-    "return not found when the content does not exist" in {
+    "return not found when the domain does not exist" in {
       val sharding = mock[ClusterSharding]
       val entity = mock[EntityRef[Domain.Command]]
 
@@ -72,7 +58,7 @@ class ActorDomainServiceSpec
       subject.getDomainInfo("/branch").futureValue shouldBe notFound("/branch")
     }
 
-    "return unexpected message when root returns an unexpected message" in {
+    "return unexpected message when the domain returns an unexpected message" in {
       val sharding = mock[ClusterSharding]
       val entity = mock[EntityRef[Domain.Command]]
 
@@ -86,19 +72,6 @@ class ActorDomainServiceSpec
       res.swap.getOrElse(null) shouldBe an[UnexpectedError]
     }
 
-    "return unexpected message when branch returns an unexpected message" in {
-      val sharding = mock[ClusterSharding]
-      val entity = mock[EntityRef[Domain.Command]]
-
-      when(sharding.entityRefFor(Domain.Key, "/branch")).thenReturn(entity)
-      when(entity.ask[Domain.Response](any())(any())).thenReturn(Future.successful(Domain.Done))
-
-      val subject = new ActorDomainService(timeout, sharding)
-
-      val res = subject.getDomainInfo("/branch").futureValue
-      res should be(Symbol("left"))
-      res.swap.getOrElse(null) shouldBe an[UnexpectedError]
-    }
   }
 
   "The createDomain function" should {

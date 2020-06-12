@@ -24,7 +24,7 @@ case class AppConfig(private val config: Config) extends LazyLogging {
     val props = new Properties
 
     props.put("bootstrap.servers", config.appString("kafka.broker-list"))
-    props.put("client.id", "webfleet-driver")
+    props.put("client.id", "webfleet-domains")
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
 

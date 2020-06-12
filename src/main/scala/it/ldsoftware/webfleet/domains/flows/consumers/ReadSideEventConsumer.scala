@@ -4,7 +4,7 @@ import akka.Done
 import com.typesafe.scalalogging.LazyLogging
 import it.ldsoftware.webfleet.domains.actors.Domain
 import it.ldsoftware.webfleet.domains.flows.ContentEventConsumer
-import it.ldsoftware.webfleet.domains.read.model.AccessList
+import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.service.DomainReadService
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -16,7 +16,7 @@ class ReadSideEventConsumer(readService: DomainReadService)(implicit ec: Executi
 
   override def consume(actorId: String, event: Domain.Event): Future[Done] = event match {
     case Domain.Created(form, user) =>
-      val rm = AccessList(
+      val rm = AccessGrant(
         form.id,
         form.title,
         form.icon,

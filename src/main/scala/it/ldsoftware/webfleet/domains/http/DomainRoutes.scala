@@ -7,7 +7,7 @@ import it.ldsoftware.webfleet.domains.actors.model.{CreateForm, UpdateForm, WebD
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.model.out.RestError
 import it.ldsoftware.webfleet.domains.http.utils.{RouteHelper, UserExtractor}
-import it.ldsoftware.webfleet.domains.read.model.AccessList
+import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.User
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
 import it.ldsoftware.webfleet.domains.service.model.{DomainFilter, NoResult}
@@ -36,7 +36,7 @@ class DomainRoutes(
 
   private def listDomains(user: User): Route = get {
     parameterMap { params =>
-      svcCall[List[AccessList]](
+      svcCall[List[AccessGrant]](
         readService.search(DomainFilter(params.get("path"), params.get("title"), user.name))
       )
     }

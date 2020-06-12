@@ -118,7 +118,7 @@ object Domain {
 
   case object Existing {
     def apply(form: CreateForm, user: User): Existing = {
-      val content = WebDomain(form.title, form.id, form.icon, Set(user.name))
+      val content = WebDomain(form.id, form.title, form.icon, Set(user.name))
       Existing(content)
     }
 

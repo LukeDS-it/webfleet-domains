@@ -17,7 +17,7 @@ import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
-import it.ldsoftware.webfleet.domains.read.model.AccessList
+import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.model.ApplicationHealth
 import it.ldsoftware.webfleet.domains.testcontainers._
@@ -111,9 +111,9 @@ class WebfleetDomainsAppSpec
       val (status, headers) = createDomain(form, jwt)
 
       status shouldBe StatusCodes.Created
-      headers should contain(Location("/"))
+      headers should contain(Location("bob-website-123"))
 
-      val get = HttpRequest(uri = "http://localhost:8080/api/v1/contents/bob-website-123")
+      val get = HttpRequest(uri = "http://localhost:8080/api/v1/domains/bob-website-123")
         .withHeaders(Seq(jwt))
       val content = http
         .singleRequest(get)
@@ -177,11 +177,11 @@ class WebfleetDomainsAppSpec
       eventually {
         val resp = http
           .singleRequest(HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(jwt)))
-          .flatMap(Unmarshal(_).to[List[AccessList]])
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
           .futureValue
 
         resp should have size 1
-        resp.head shouldBe AccessList("acme-website", "ACME website", "bomb", "an-user")
+        resp.head shouldBe AccessGrant("acme-website", "ACME website", "bomb", "an-user")
       }
     }
 
@@ -197,7 +197,7 @@ class WebfleetDomainsAppSpec
       props.put("enable.auto.commit", "true")
 
       val kafkaConsumer = new KafkaConsumer[String, String](props)
-      kafkaConsumer.subscribe(Collections.singletonList("webfleet-contents"))
+      kafkaConsumer.subscribe(Collections.singletonList("webfleet-domains"))
 
       val jwt = auth0Server.jwtHeader("superuser", Permissions.AllPermissions)
 

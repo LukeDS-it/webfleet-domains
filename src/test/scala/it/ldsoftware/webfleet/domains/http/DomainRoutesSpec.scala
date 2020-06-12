@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.http.utils.BaseHttpSpec
-import it.ldsoftware.webfleet.domains.read.model.AccessList
+import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.User
 import it.ldsoftware.webfleet.domains.service.model._
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
@@ -22,7 +22,7 @@ class DomainRoutesSpec extends BaseHttpSpec {
 
       val domainService = mock[DomainService]
       val readService = mock[DomainReadService]
-      val expected = List(AccessList("/", "a", "b", "user"))
+      val expected = List(AccessGrant("/", "a", "b", "user"))
 
       when(readService.search(DomainFilter(None, None, "me")))
         .thenReturn(Future.successful(success(expected)))
@@ -35,7 +35,7 @@ class DomainRoutesSpec extends BaseHttpSpec {
         new DomainRoutes(domainService, readService, defaultExtractor).routes ~>
         check {
           status shouldBe StatusCodes.OK
-          entityAs[List[AccessList]] shouldBe expected
+          entityAs[List[AccessGrant]] shouldBe expected
         }
     }
   }

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.snapshot
 );
 
 -- changeset luca:create-access-list
-create table if not exists public.access_list
+create table if not exists public.access_grants
 (
     id          varchar(255) not null,
     title       varchar(255) not null,
@@ -40,5 +40,5 @@ create table if not exists public.offset_store
 (
     consumer_name varchar(255) not null,
     last_offset bigint not null,
-    primary key (tag)
+    primary key (consumer_name)
 )

@@ -12,7 +12,7 @@ class TargetContainer(
     val appVersion: String = sys.env.getOrElse("APP_VERSION", "latest"),
     val targetPort: Int = 8080
 ) extends FixedHostPortGenericContainer(
-      imageName = s"index.docker.io/webfleet-driver:$appVersion",
+      imageName = s"index.docker.io/webfleet-domains:$appVersion",
       waitStrategy = Some(Wait.forLogMessage(".*listening on http port.*\n", 1)),
       exposedHostPort = targetPort,
       exposedContainerPort = 8080,

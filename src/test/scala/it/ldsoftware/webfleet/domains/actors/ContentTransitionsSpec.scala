@@ -17,8 +17,8 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
       )
       val user = User("name", Set(), None)
       val expected = WebDomain(
-        "title",
         "/parent/child",
+        "title",
         "icon",
         Set("name")
       )
