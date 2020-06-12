@@ -11,7 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // $COVERAGE-OFF$
 class SlickDomainReadService(db: Database)(implicit ec: ExecutionContext)
-  extends DomainReadService
+    extends DomainReadService
     with LazyLogging {
 
   val accessList = TableQuery[AccessListDBIO]
@@ -19,7 +19,12 @@ class SlickDomainReadService(db: Database)(implicit ec: ExecutionContext)
   def insertRule(content: AccessList): Future[AccessList] =
     db.run(accessList.returning(accessList) += content)
 
-  override def editRule(id: String, user: String, title: Option[String], icon: Option[String]): Future[Int] = {
+  override def editRule(
+      id: String,
+      user: String,
+      title: Option[String],
+      icon: Option[String]
+  ): Future[Int] = {
     ???
   }
 

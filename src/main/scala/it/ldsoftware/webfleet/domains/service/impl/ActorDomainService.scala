@@ -26,7 +26,7 @@ class ActorDomainService(
       .ask[Domain.Response](Domain.Read)
       .map {
         case Domain.DomainInfo(content) => success(content)
-        case Domain.NotFound(path)     => notFound(path)
+        case Domain.NotFound(path)      => notFound(path)
         case _                          => unexpectedMessage
       }
 
@@ -42,7 +42,7 @@ class ActorDomainService(
         case Domain.Invalid(errors)        => invalid(errors)
         case Domain.NotFound(path)         => notFound(path)
         case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
-        case _                              => unexpectedMessage
+        case _                             => unexpectedMessage
       }
 
   override def addUser(path: String, user: String): Future[ServiceResult[NoResult]] = ???
@@ -60,7 +60,7 @@ class ActorDomainService(
         case Domain.Invalid(errors)        => invalid(errors)
         case Domain.NotFound(path)         => notFound(path)
         case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
-        case _                              => unexpectedMessage
+        case _                             => unexpectedMessage
       }
 
   override def deleteDomain(path: String, user: User): Future[ServiceResult[NoResult]] =
@@ -73,7 +73,7 @@ class ActorDomainService(
         case Domain.NotFound(path)         => notFound(path)
         case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
         case Domain.UnAuthorized           => forbidden
-        case _                              => unexpectedMessage
+        case _                             => unexpectedMessage
       }
 
   private def unexpectedMessage[T]: ServiceResult[T] =

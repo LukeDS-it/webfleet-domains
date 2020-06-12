@@ -10,7 +10,9 @@ object Permissions {
   }
 
   val AllPermissions: Set[String] = Set(
-    Domains.Create, Domains.Update, Domains.Invite
+    Domains.Create,
+    Domains.Update,
+    Domains.Invite
   )
 
 }
