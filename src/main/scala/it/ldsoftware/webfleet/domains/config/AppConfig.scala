@@ -42,7 +42,7 @@ case class AppConfig(private val config: Config) extends LazyLogging {
     props
   }
 
-  lazy val contentTopic: String = config.appString("kafka.topics.content")
+  lazy val domainTopic: String = config.appString("kafka.topics.domains")
 
   def getConfig: Config = config
 

@@ -5,14 +5,14 @@ import akka.actor.typed.{ActorSystem, Behavior, PostStop}
 import akka.cluster.sharding.typed.scaladsl.ShardedDaemonProcess
 import akka.cluster.sharding.typed.{ClusterShardingSettings, ShardedDaemonProcessSettings}
 import akka.stream.KillSwitches
-import it.ldsoftware.webfleet.domains.flows.ContentFlow
+import it.ldsoftware.webfleet.domains.flows.DomainFlow
 
 import scala.concurrent.duration._
 
 // $COVERAGE-OFF$ tested in driver
 object EventProcessor {
 
-  def apply(flow: ContentFlow): Behavior[Nothing] = Behaviors.setup[Nothing] { _ =>
+  def apply(flow: DomainFlow): Behavior[Nothing] = Behaviors.setup[Nothing] { _ =>
     val killSwitch = KillSwitches.shared("eventProcessorSwitch")
     flow.run(killSwitch)
     Behaviors.receiveSignal[Nothing] {
@@ -24,7 +24,7 @@ object EventProcessor {
 
   def init(
       system: ActorSystem[_],
-      flow: ContentFlow
+      flow: DomainFlow
   ): Unit = {
     val settings = ShardedDaemonProcessSettings(system)
       .withKeepAliveInterval(1.second)

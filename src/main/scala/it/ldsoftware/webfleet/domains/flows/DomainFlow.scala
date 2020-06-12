@@ -6,12 +6,12 @@ import akka.persistence.query.Offset
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.stream.{Materializer, SharedKillSwitch}
 import it.ldsoftware.webfleet.domains.actors.Domain
-import it.ldsoftware.webfleet.domains.flows.ContentFlow._
+import it.ldsoftware.webfleet.domains.flows.DomainFlow._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-class ContentFlow(
+class DomainFlow(
     readJournal: JdbcReadJournal,
     offsetManager: OffsetManager,
     val consumer: ContentEventConsumer
@@ -49,6 +49,6 @@ class ContentFlow(
 
 }
 
-object ContentFlow {
-  val Tag = "content"
+object DomainFlow {
+  val Tag = "domain"
 }

@@ -6,6 +6,7 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect}
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.actors.serialization.CborSerializable
+import it.ldsoftware.webfleet.domains.flows.DomainFlow
 import it.ldsoftware.webfleet.domains.security.User
 
 /**
@@ -138,7 +139,7 @@ object Domain {
         commandHandler = (state, command) => state.handle(command),
         eventHandler = (state, event) => state.process(event)
       )
-      .withTagger(_ => Set("domain"))
+      .withTagger(_ => Set(DomainFlow.Tag))
 
   /**
     * This function initializes the Content actor in the cluster sharding

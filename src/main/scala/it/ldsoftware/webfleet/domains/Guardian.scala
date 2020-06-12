@@ -9,7 +9,7 @@ import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.PersistenceQuery
 import it.ldsoftware.webfleet.domains.actors.{Domain, EventProcessor}
 import it.ldsoftware.webfleet.domains.config.ApplicationContext
-import it.ldsoftware.webfleet.domains.flows.ContentFlow
+import it.ldsoftware.webfleet.domains.flows.DomainFlow
 import it.ldsoftware.webfleet.domains.http.{AllRoutes, WebfleetServer}
 import it.ldsoftware.webfleet.domains.service.impl._
 
@@ -27,7 +27,7 @@ object Guardian {
 
       Domain.init(system)
       appContext.consumers
-        .map(new ContentFlow(readJournal, appContext.offsetManager, _))
+        .map(new DomainFlow(readJournal, appContext.offsetManager, _))
         .foreach(EventProcessor.init(system, _))
 
       val domainService = new ActorDomainService(timeout, sharding)

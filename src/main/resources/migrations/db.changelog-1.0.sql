@@ -30,8 +30,8 @@ create table if not exists public.access_grants
 (
     id          varchar(255) not null,
     title       varchar(255) not null,
-    icon        varchar(255),
-    user_name   varchar(8),
+    icon        varchar(255) not null,
+    user_name   varchar(255) not null,
     primary key (id, user_name)
 );
 

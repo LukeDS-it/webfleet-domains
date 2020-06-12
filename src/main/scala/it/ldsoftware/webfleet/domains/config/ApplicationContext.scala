@@ -34,7 +34,7 @@ class ApplicationContext(appConfig: AppConfig)(implicit ec: ExecutionContext) {
 
   lazy val kafkaEventConsumer = new KafkaEventConsumer(
     new KafkaProducer[String, String](appConfig.kafkaProperties),
-    appConfig.contentTopic
+    appConfig.domainTopic
   )
 
   lazy val consumers: Seq[ContentEventConsumer] = Seq(readSideEventConsumer, kafkaEventConsumer)
