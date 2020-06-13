@@ -10,11 +10,13 @@ import io.circe.generic.auto._
 class UserRoutes(domainService: DomainService, val extractor: UserExtractor) extends RouteHelper {
 
   def routes: Route = pathPrefix("api" / "v1" / "domains" / Segment / "users") { domain =>
-    pathEndOrSingleSlash {
-      addUser(domain)
-    } ~ path(Segment) { userName =>
+    login { user =>
       pathEndOrSingleSlash {
-        removeUser(domain, userName)
+        addUser(domain)
+      } ~ path(Segment) { userName =>
+        pathEndOrSingleSlash {
+          removeUser(domain, userName)
+        }
       }
     }
   }

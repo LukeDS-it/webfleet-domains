@@ -17,6 +17,7 @@ import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
+import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.model.ApplicationHealth
@@ -176,7 +177,9 @@ class WebfleetDomainsAppSpec
       Then("The user sees that website in the list of sites they can access")
       eventually {
         val resp = http
-          .singleRequest(HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(jwt)))
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(jwt))
+          )
           .flatMap(Unmarshal(_).to[List[AccessGrant]])
           .futureValue
 
@@ -184,7 +187,129 @@ class WebfleetDomainsAppSpec
         resp.head shouldBe AccessGrant("acme-website", "ACME website", "bomb", "an-user")
       }
     }
+  }
 
+  Feature("The service allows website managers to share their websites") {
+    Scenario("The manager adds an user to their site") {
+      Given("The website manager")
+      val jwt = auth0Server.jwtHeader("manager", Permissions.AllPermissions)
+
+      And("A website created by the manager")
+      val form = CreateForm(
+        title = "Adding users",
+        id = "adding-users",
+        icon = "user"
+      )
+      createDomain(form, jwt)
+      eventually {
+        val resp = http
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(jwt))
+          )
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
+          .futureValue
+
+        resp should have size 1
+        resp.head shouldBe AccessGrant("adding-users", "Adding users", "user", "manager")
+      }
+
+      When("The manager shares the site with another user")
+      Marshal(UserIn("shared-user"))
+        .to[RequestEntity]
+        .map(e =>
+          HttpRequest(
+            method = HttpMethods.POST,
+            uri = s"http://localhost:8080/api/v1/domains/adding-users/users",
+            entity = e
+          ).withHeaders(Seq(jwt))
+        )
+        .map(r => http.singleRequest(r))
+        .flatMap(f => f.map(resp => resp.status))
+        .futureValue shouldBe StatusCodes.NoContent
+
+      Then("That user can see the website in his list")
+      val sharedJwt = auth0Server.jwtHeader("shared-user", Permissions.AllPermissions)
+      eventually {
+        val resp = http
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(sharedJwt))
+          )
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
+          .futureValue
+
+        resp should have size 1
+        resp.head shouldBe AccessGrant("adding-users", "Adding users", "user", "shared-user")
+      }
+    }
+
+    Scenario("The manager removes an user from their site") {
+      Given("The website manager")
+      val jwt = auth0Server.jwtHeader("rem-manager", Permissions.AllPermissions)
+
+      And("A website created by the manager")
+      val form = CreateForm(
+        title = "Removing users",
+        id = "removing-users",
+        icon = "user"
+      )
+      createDomain(form, jwt)
+      eventually {
+        val resp = http
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(jwt))
+          )
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
+          .futureValue
+
+        resp should have size 1
+        resp.head shouldBe AccessGrant("removing-users", "Removing users", "user", "rem-manager")
+      }
+
+      And("The manager had shared the site with another user")
+      Marshal(UserIn("removed-user"))
+        .to[RequestEntity]
+        .map(e =>
+          HttpRequest(
+            method = HttpMethods.POST,
+            uri = s"http://localhost:8080/api/v1/domains/removing-users/users",
+            entity = e
+          ).withHeaders(Seq(jwt))
+        )
+        .map(r => http.singleRequest(r))
+        .flatMap(f => f.map(resp => resp.status))
+        .futureValue shouldBe StatusCodes.NoContent
+
+      val sharedJwt = auth0Server.jwtHeader("removed-user", Permissions.AllPermissions)
+      eventually {
+        val resp = http
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(sharedJwt))
+          )
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
+          .futureValue
+
+        resp should have size 1
+        resp.head shouldBe AccessGrant("removing-users", "Removing users", "user", "removed-user")
+      }
+
+      When("The manager removes grant to that user")
+      val req = HttpRequest(
+        uri = "http://localhost:8080/api/v1/domains/removing-users/users/removed-user",
+        method = HttpMethods.DELETE
+      ).withHeaders(Seq(jwt))
+      http.singleRequest(req).map(resp => resp.status).futureValue shouldBe StatusCodes.NoContent
+
+      eventually {
+        val resp = http
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(sharedJwt))
+          )
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
+          .futureValue
+
+        resp should have size 0
+      }
+    }
   }
 
   Feature("The service sends data to a kafka topic") {
