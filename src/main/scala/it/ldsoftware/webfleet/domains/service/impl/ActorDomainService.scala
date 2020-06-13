@@ -74,10 +74,14 @@ class ActorDomainService(
         case _                             => unexpectedMessage
       }
 
-  override def addUser(path: String, user: String): Future[ServiceResult[NoResult]] =
+  override def addUser(
+      path: String,
+      user: String,
+      permissions: Set[String]
+  ): Future[ServiceResult[NoResult]] =
     clusterSharding
       .entityRefFor(Domain.Key, path)
-      .ask[Domain.Response](Domain.AddUser(user, _))
+      .ask[Domain.Response](Domain.AddUser(user, permissions, _))
       .map {
         case Domain.Done                   => noOutput
         case Domain.NotFound(path)         => notFound(path)

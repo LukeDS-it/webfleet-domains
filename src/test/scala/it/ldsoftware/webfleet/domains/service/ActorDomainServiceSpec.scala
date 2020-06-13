@@ -301,7 +301,7 @@ class ActorDomainServiceSpec
     "Website title",
     "i",
     "name",
-    Set()
+    Map()
   )
 
   def defaultForm: CreateForm = CreateForm(

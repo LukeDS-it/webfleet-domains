@@ -16,7 +16,7 @@ trait DomainService {
 
   def deleteDomain(path: String, user: User): Future[ServiceResult[NoResult]]
 
-  def addUser(path: String, user: String): Future[ServiceResult[NoResult]]
+  def addUser(path: String, user: String, permissions: Set[String]): Future[ServiceResult[NoResult]]
 
   def removeUser(path: String, user: String): Future[ServiceResult[NoResult]]
 

@@ -25,7 +25,7 @@ class ReadSideEventConsumer(readService: DomainReadService)(implicit ec: Executi
       logger.debug(s"Adding main access grant $rm")
       readService.insertRule(rm).map(_ => Done)
 
-    case Domain.Updated(form, user) =>
+    case Domain.Updated(form, _) =>
       logger.debug(s"Updating access grants for $actorId")
       readService.editRule(actorId, form.title, form.icon).map(_ => Done)
 
@@ -33,7 +33,7 @@ class ReadSideEventConsumer(readService: DomainReadService)(implicit ec: Executi
       logger.debug(s"Deleting access grants of domain $actorId")
       readService.deleteAllRules(actorId).map(_ => Done)
 
-    case Domain.UserAdded(userName) =>
+    case Domain.UserAdded(userName, _) =>
       logger.debug(s"Adding user $userName to domain $actorId")
       readService
         .getAnyRule(actorId)
