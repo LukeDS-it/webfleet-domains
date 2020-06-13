@@ -20,9 +20,9 @@ class ActorDomainService(
 
   implicit val timeout: Timeout = Timeout.create(askTimeout)
 
-  override def getDomainInfo(path: String): Future[ServiceResult[WebDomain]] =
+  override def getDomainInfo(domain: String): Future[ServiceResult[WebDomain]] =
     clusterSharding
-      .entityRefFor(Domain.Key, path)
+      .entityRefFor(Domain.Key, domain)
       .ask[Domain.Response](Domain.Read)
       .map {
         case Domain.DomainInfo(content) => success(content)
@@ -46,12 +46,12 @@ class ActorDomainService(
       }
 
   override def updateDomain(
-      path: String,
+      domain: String,
       form: UpdateForm,
       user: User
   ): Future[ServiceResult[NoResult]] =
     clusterSharding
-      .entityRefFor(Domain.Key, path)
+      .entityRefFor(Domain.Key, domain)
       .ask[Domain.Response](Domain.Update(form, user, _))
       .map {
         case Domain.Done                   => noOutput
@@ -61,9 +61,9 @@ class ActorDomainService(
         case _                             => unexpectedMessage
       }
 
-  override def deleteDomain(path: String, user: User): Future[ServiceResult[NoResult]] =
+  override def deleteDomain(domain: String, user: User): Future[ServiceResult[NoResult]] =
     clusterSharding
-      .entityRefFor(Domain.Key, path)
+      .entityRefFor(Domain.Key, domain)
       .ask[Domain.Response](Domain.Delete(user, _))
       .map {
         case Domain.Done                   => noOutput
@@ -75,12 +75,12 @@ class ActorDomainService(
       }
 
   override def addUser(
-      path: String,
+      domain: String,
       user: String,
       permissions: Set[String]
   ): Future[ServiceResult[NoResult]] =
     clusterSharding
-      .entityRefFor(Domain.Key, path)
+      .entityRefFor(Domain.Key, domain)
       .ask[Domain.Response](Domain.AddUser(user, permissions, _))
       .map {
         case Domain.Done                   => noOutput
@@ -89,10 +89,26 @@ class ActorDomainService(
         case _                             => unexpectedMessage
       }
 
-  override def removeUser(path: String, user: String): Future[ServiceResult[NoResult]] =
+  override def removeUser(domain: String, user: String): Future[ServiceResult[NoResult]] =
     clusterSharding
-      .entityRefFor(Domain.Key, path)
+      .entityRefFor(Domain.Key, domain)
       .ask[Domain.Response](Domain.RemoveUser(user, _))
+      .map {
+        case Domain.Done                   => noOutput
+        case Domain.NotFound(path)         => notFound(path)
+        case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
+        case Domain.UnAuthorized           => forbidden
+        case _                             => unexpectedMessage
+      }
+
+  override def checkPermissions(
+      domain: String,
+      user: String,
+      perm: String
+  ): Future[ServiceResult[NoResult]] =
+    clusterSharding
+      .entityRefFor(Domain.Key, domain)
+      .ask[Domain.Response](Domain.HasPermission(user, perm, _))
       .map {
         case Domain.Done                   => noOutput
         case Domain.NotFound(path)         => notFound(path)
