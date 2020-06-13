@@ -45,8 +45,6 @@ class ActorDomainService(
         case _                             => unexpectedMessage
       }
 
-  override def addUser(path: String, user: String): Future[ServiceResult[NoResult]] = ???
-
   override def updateDomain(
       path: String,
       form: UpdateForm,
@@ -75,6 +73,10 @@ class ActorDomainService(
         case Domain.UnAuthorized           => forbidden
         case _                             => unexpectedMessage
       }
+
+  override def addUser(path: String, user: String): Future[ServiceResult[NoResult]] = ???
+
+  override def removeUser(path: String, user: String): Future[ServiceResult[NoResult]] = ???
 
   private def unexpectedMessage[T]: ServiceResult[T] =
     unexpectedError(new Error(), "Unexpected response from actor")

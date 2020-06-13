@@ -25,7 +25,7 @@ class DomainRoutes(
       } ~
         path(Segment) { domain =>
           pathEndOrSingleSlash {
-            getDomainInfo(domain) ~ postUser(domain) ~ editDomain(domain, user) ~ deleteDomain(
+            getDomainInfo(domain) ~ editDomain(domain, user) ~ deleteDomain(
               domain,
               user
             )
@@ -48,12 +48,6 @@ class DomainRoutes(
 
   private def getDomainInfo(remaining: String): Route = get {
     svcCall[WebDomain](domainService.getDomainInfo(remaining))
-  }
-
-  private def postUser(remaining: String): Route = post {
-    entity(as[UserIn]) { user =>
-      svcCall[NoResult](domainService.addUser(remaining, user.userName))
-    }
   }
 
   private def editDomain(remaining: String, user: User): Route = put {

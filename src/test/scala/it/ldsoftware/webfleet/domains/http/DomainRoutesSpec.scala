@@ -143,12 +143,4 @@ class DomainRoutesSpec extends BaseHttpSpec {
       verify(domainService).deleteDomain("website-id", user)
     }
   }
-
-  "The POST {id}/users path" should {
-    "call the add user function" in {}
-  }
-
-  "The DELETE {id}/users/{name} path" should {
-    "call the remove user function" in {}
-  }
 }
