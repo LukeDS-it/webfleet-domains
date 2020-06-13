@@ -5,7 +5,7 @@ import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.http.scaladsl.model._
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.utils.BaseHttpSpec
-import it.ldsoftware.webfleet.domains.security.User
+import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 import it.ldsoftware.webfleet.domains.service.DomainService
 import it.ldsoftware.webfleet.domains.service.model._
 import org.mockito.Mockito.{verify, when}
@@ -22,11 +22,11 @@ class UserRoutesSpec extends BaseHttpSpec {
       val domainService = mock[DomainService]
 
       val user = User("name", Set(), None)
-      when(domainService.addUser("website-id", "user"))
+      when(domainService.addUser("website-id", "user", Permissions.AllPermissions))
         .thenReturn(Future.successful(noOutput))
       when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
 
-      val req = Marshal(UserIn("user"))
+      val req = Marshal(UserIn("user", Permissions.AllPermissions))
         .to[RequestEntity]
         .map(e => HttpRequest(uri = uri, method = HttpMethods.POST, entity = e))
         .futureValue
@@ -37,7 +37,7 @@ class UserRoutesSpec extends BaseHttpSpec {
           status shouldBe StatusCodes.NoContent
         }
 
-      verify(domainService).addUser("website-id", "user")
+      verify(domainService).addUser("website-id", "user", Permissions.AllPermissions)
     }
   }
 

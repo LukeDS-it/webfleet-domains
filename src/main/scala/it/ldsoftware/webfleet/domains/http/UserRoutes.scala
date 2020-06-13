@@ -10,7 +10,7 @@ import io.circe.generic.auto._
 class UserRoutes(domainService: DomainService, val extractor: UserExtractor) extends RouteHelper {
 
   def routes: Route = pathPrefix("api" / "v1" / "domains" / Segment / "users") { domain =>
-    login { user =>
+    login { _ =>
       pathEndOrSingleSlash {
         addUser(domain)
       } ~ path(Segment) { userName =>
@@ -23,7 +23,7 @@ class UserRoutes(domainService: DomainService, val extractor: UserExtractor) ext
 
   private def addUser(remaining: String): Route = post {
     entity(as[UserIn]) { user =>
-      svcCall[NoResult](domainService.addUser(remaining, user.userName))
+      svcCall[NoResult](domainService.addUser(remaining, user.userName, user.permissions))
     }
   }
 

@@ -1,3 +1,3 @@
 package it.ldsoftware.webfleet.domains.http.model.in
 
-case class UserIn(userName: String)
+case class UserIn(userName: String, permissions: Set[String])

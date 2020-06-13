@@ -2,7 +2,7 @@ package it.ldsoftware.webfleet.domains.actors
 
 import it.ldsoftware.webfleet.domains.actors.Domain._
 import it.ldsoftware.webfleet.domains.actors.model._
-import it.ldsoftware.webfleet.domains.security.User
+import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
@@ -21,7 +21,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "title",
         "icon",
         "name",
-        Set("name")
+        Map("name" -> Permissions.AllPermissions)
       )
 
       NonExisting("/").process(Created(form, user)) shouldBe Existing(expected)
@@ -42,7 +42,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "title",
         "icon",
         "name",
-        Set()
+        Map()
       )
 
       val form = UpdateForm(
@@ -55,7 +55,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "new title",
         "new icon",
         "name",
-        Set()
+        Map()
       )
 
       val user = User("user", Set(), None)
@@ -69,7 +69,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "title",
         "icon",
         "name",
-        Set()
+        Map()
       )
 
       val user = User("name", Set(), None)
@@ -89,7 +89,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "/parent/child",
         "icon",
         "name",
-        Set()
+        Map()
       )
 
       an[IllegalStateException] should be thrownBy Existing(old).process(Created(form, user))

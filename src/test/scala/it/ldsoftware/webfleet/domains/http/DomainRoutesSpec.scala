@@ -7,7 +7,7 @@ import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.http.utils.BaseHttpSpec
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
-import it.ldsoftware.webfleet.domains.security.User
+import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 import it.ldsoftware.webfleet.domains.service.model._
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
 import org.mockito.Mockito.{verify, when}
@@ -75,7 +75,13 @@ class DomainRoutesSpec extends BaseHttpSpec {
       val domainService = mock[DomainService]
       val readService = mock[DomainReadService]
 
-      val expected = WebDomain("website-id", "Website", "icon", "name", Set("user1", "user2"))
+      val expected = WebDomain(
+        "website-id",
+        "Website",
+        "icon",
+        "name",
+        Map("user1" -> Permissions.AllPermissions, "user2" -> Permissions.AllPermissions)
+      )
       val user = User("name", Set(), None)
 
       when(domainService.getDomainInfo("website-id"))

@@ -119,13 +119,14 @@ class DomainSpec
       val user = superUser
 
       rootTestKit.runCommand[Response](Create(form, user, _))
-      val result = rootTestKit.runCommand[Response](AddUser("user-to-add", _))
+      val result =
+        rootTestKit.runCommand[Response](AddUser("user-to-add", Permissions.AllPermissions, _))
 
       val expected = getExpectedContent(form, user)
-      val nAccess = expected.accessList + "user-to-add"
+      val nAccess = expected.accessList + ("user-to-add" -> Permissions.AllPermissions)
 
       result.reply shouldBe Done
-      result.event shouldBe UserAdded("user-to-add")
+      result.event shouldBe UserAdded("user-to-add", Permissions.AllPermissions)
       result.state shouldBe Existing(expected.copy(accessList = nAccess))
     }
 
@@ -134,7 +135,7 @@ class DomainSpec
       val user = superUser
 
       rootTestKit.runCommand[Response](Create(form, user, _))
-      rootTestKit.runCommand[Response](AddUser("user-to-remove", _))
+      rootTestKit.runCommand[Response](AddUser("user-to-remove", Permissions.AllPermissions, _))
       val result = rootTestKit.runCommand[Response](RemoveUser("user-to-remove", _))
 
       result.reply shouldBe Done
@@ -165,7 +166,7 @@ class DomainSpec
       form.title,
       form.icon,
       user.name,
-      Set(user.name)
+      Map(user.name -> Permissions.AllPermissions)
     )
 
   def mockContent(commandTranslator: Domain.Command => Domain.Response): Unit = {

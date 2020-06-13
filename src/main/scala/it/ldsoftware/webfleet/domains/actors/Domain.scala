@@ -7,7 +7,7 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffec
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.actors.serialization.CborSerializable
 import it.ldsoftware.webfleet.domains.flows.DomainFlow
-import it.ldsoftware.webfleet.domains.security.User
+import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 
 /**
   * This object contains actor logic for any content of the website.
@@ -26,7 +26,7 @@ object Domain {
   case class Create(form: CreateForm, user: User, replyTo: Requester) extends Command
   case class Update(form: UpdateForm, user: User, replyTo: Requester) extends Command
   case class Delete(user: User, replyTo: Requester) extends Command
-  case class AddUser(name: String, replyTo: Requester) extends Command
+  case class AddUser(name: String, permissions: Set[String], replyTo: Requester) extends Command
   case class RemoveUser(name: String, replyTo: Requester) extends Command
 
   sealed trait Event extends CborSerializable
@@ -34,7 +34,7 @@ object Domain {
   case class Created(form: CreateForm, user: User) extends Event
   case class Updated(form: UpdateForm, user: User) extends Event
   case class Deleted(user: User) extends Event
-  case class UserAdded(name: String) extends Event
+  case class UserAdded(name: String, permissions: Set[String]) extends Event
   case class UserRemoved(name: String) extends Event
 
   sealed trait Response extends CborSerializable
@@ -104,8 +104,8 @@ object Domain {
           Effect.persist(Updated(form, user)).thenReply(replyTo)(_ => Done)
         case Delete(user, replyTo) =>
           Effect.persist(Deleted(user)).thenReply(replyTo)(_ => Done)
-        case AddUser(user, replyTo) =>
-          Effect.persist(UserAdded(user)).thenReply(replyTo)(_ => Done)
+        case AddUser(user, permissions, replyTo) =>
+          Effect.persist(UserAdded(user, permissions)).thenReply(replyTo)(_ => Done)
         case RemoveUser(user, replyTo) =>
           if (webDomain.creator != user)
             Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
@@ -123,8 +123,8 @@ object Domain {
         )
       case Deleted(_) =>
         NonExisting(webDomain.id)
-      case UserAdded(user) =>
-        Existing(webDomain.copy(accessList = webDomain.accessList + user))
+      case UserAdded(user, permissions) =>
+        Existing(webDomain.copy(accessList = webDomain.accessList + (user -> permissions)))
       case UserRemoved(user) =>
         Existing(webDomain.copy(accessList = webDomain.accessList - user))
       case e =>
@@ -134,7 +134,13 @@ object Domain {
 
   case object Existing {
     def apply(form: CreateForm, user: User): Existing = {
-      val content = WebDomain(form.id, form.title, form.icon, user.name, Set(user.name))
+      val content = WebDomain(
+        form.id,
+        form.title,
+        form.icon,
+        user.name,
+        Map(user.name -> Permissions.AllPermissions)
+      )
       Existing(content)
     }
 

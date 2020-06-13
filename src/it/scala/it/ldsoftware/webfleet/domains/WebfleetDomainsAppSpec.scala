@@ -214,7 +214,7 @@ class WebfleetDomainsAppSpec
       }
 
       When("The manager shares the site with another user")
-      Marshal(UserIn("shared-user"))
+      Marshal(UserIn("shared-user", Set(Permissions.Contents.Insert)))
         .to[RequestEntity]
         .map(e =>
           HttpRequest(
@@ -266,7 +266,7 @@ class WebfleetDomainsAppSpec
       }
 
       And("The manager had shared the site with another user")
-      Marshal(UserIn("removed-user"))
+      Marshal(UserIn("removed-user", Set(Permissions.Contents.Insert)))
         .to[RequestEntity]
         .map(e =>
           HttpRequest(

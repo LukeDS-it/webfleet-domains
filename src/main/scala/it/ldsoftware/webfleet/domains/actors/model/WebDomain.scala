@@ -5,5 +5,5 @@ case class WebDomain(
     title: String,
     icon: String,
     creator: String,
-    accessList: Set[String]
+    accessList: Map[String, Set[String]]
 )
