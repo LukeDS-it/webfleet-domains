@@ -300,6 +300,7 @@ class ActorDomainServiceSpec
     "website-id",
     "Website title",
     "i",
+    "name",
     Set()
   )
 

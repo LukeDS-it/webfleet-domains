@@ -75,7 +75,7 @@ class DomainRoutesSpec extends BaseHttpSpec {
       val domainService = mock[DomainService]
       val readService = mock[DomainReadService]
 
-      val expected = WebDomain("website-id", "Website", "icon", Set("user1", "user2"))
+      val expected = WebDomain("website-id", "Website", "icon", "name", Set("user1", "user2"))
       val user = User("name", Set(), None)
 
       when(domainService.getDomainInfo("website-id"))

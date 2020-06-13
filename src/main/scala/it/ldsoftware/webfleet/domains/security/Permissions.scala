@@ -6,13 +6,18 @@ object Permissions {
   object Domains {
     val Create = "domain.create"
     val Update = "domain.update"
-    val Invite = "domain.invite"
+  }
+
+  object Users {
+    val Add = "user.add"
+    val Remove = "user.remove"
   }
 
   val AllPermissions: Set[String] = Set(
     Domains.Create,
     Domains.Update,
-    Domains.Invite
+    Users.Add,
+    Users.Remove
   )
 
 }

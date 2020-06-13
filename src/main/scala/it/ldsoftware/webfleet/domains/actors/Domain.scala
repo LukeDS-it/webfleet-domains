@@ -107,7 +107,10 @@ object Domain {
         case AddUser(user, replyTo) =>
           Effect.persist(UserAdded(user)).thenReply(replyTo)(_ => Done)
         case RemoveUser(user, replyTo) =>
-          Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
+          if (webDomain.creator != user)
+            Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
+          else
+            Effect.reply(replyTo)(UnAuthorized)
       }
 
     override def process(event: Event): State = event match {
@@ -131,7 +134,7 @@ object Domain {
 
   case object Existing {
     def apply(form: CreateForm, user: User): Existing = {
-      val content = WebDomain(form.id, form.title, form.icon, Set(user.name))
+      val content = WebDomain(form.id, form.title, form.icon, user.name, Set(user.name))
       Existing(content)
     }
 

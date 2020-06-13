@@ -20,6 +20,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "/parent/child",
         "title",
         "icon",
+        "name",
         Set("name")
       )
 
@@ -40,6 +41,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "domain-id",
         "title",
         "icon",
+        "name",
         Set()
       )
 
@@ -52,6 +54,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "domain-id",
         "new title",
         "new icon",
+        "name",
         Set()
       )
 
@@ -65,6 +68,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "domain-id",
         "title",
         "icon",
+        "name",
         Set()
       )
 
@@ -84,6 +88,7 @@ class ContentTransitionsSpec extends AnyWordSpec with Matchers {
         "title",
         "/parent/child",
         "icon",
+        "name",
         Set()
       )
 

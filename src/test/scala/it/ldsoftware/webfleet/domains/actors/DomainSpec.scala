@@ -164,6 +164,7 @@ class DomainSpec
       form.id,
       form.title,
       form.icon,
+      user.name,
       Set(user.name)
     )
 
