@@ -12,10 +12,12 @@ trait DomainService {
 
   def createDomain(form: CreateForm, user: User): Future[ServiceResult[String]]
 
-  def addUser(path: String, user: String): Future[ServiceResult[NoResult]]
-
   def updateDomain(path: String, form: UpdateForm, user: User): Future[ServiceResult[NoResult]]
 
   def deleteDomain(path: String, user: User): Future[ServiceResult[NoResult]]
+
+  def addUser(path: String, user: String): Future[ServiceResult[NoResult]]
+
+  def removeUser(path: String, user: String): Future[ServiceResult[NoResult]]
 
 }

@@ -22,16 +22,28 @@ class ReadSideEventConsumer(readService: DomainReadService)(implicit ec: Executi
         form.icon,
         user.name
       )
-      logger.debug(s"Adding content $rm")
+      logger.debug(s"Adding main access grant $rm")
       readService.insertRule(rm).map(_ => Done)
 
     case Domain.Updated(form, user) =>
-      logger.debug(s"Updating content $form")
-      readService.editRule(actorId, user.name, form.title, form.icon).map(_ => Done)
+      logger.debug(s"Updating access grants for $actorId")
+      readService.editRule(actorId, form.title, form.icon).map(_ => Done)
 
-    case Domain.Deleted(user) =>
-      logger.debug(s"Deleting content $actorId")
-      readService.deleteRule(actorId, user.name).map(_ => Done)
+    case Domain.Deleted(_) =>
+      logger.debug(s"Deleting access grants of domain $actorId")
+      readService.deleteAllRules(actorId).map(_ => Done)
+
+    case Domain.UserAdded(userName) =>
+      logger.debug(s"Adding user $userName to domain $actorId")
+      readService
+        .getAnyRule(actorId)
+        .map(grant => grant.copy(user = userName))
+        .flatMap(readService.insertRule)
+        .map(_ => Done)
+
+    case Domain.UserRemoved(userName) =>
+      logger.debug(s"Removing access from $actorId to $userName")
+      readService.deleteRule(actorId, userName).map(_ => Done)
 
     case _ => Future.successful(Done)
   }

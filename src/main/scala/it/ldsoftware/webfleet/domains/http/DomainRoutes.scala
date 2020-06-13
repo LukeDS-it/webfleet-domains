@@ -4,13 +4,12 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.actors.model.{CreateForm, UpdateForm, WebDomain}
-import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.model.out.RestError
 import it.ldsoftware.webfleet.domains.http.utils.{RouteHelper, UserExtractor}
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.User
-import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
 import it.ldsoftware.webfleet.domains.service.model.{DomainFilter, NoResult}
+import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
 
 class DomainRoutes(
     domainService: DomainService,
@@ -25,7 +24,7 @@ class DomainRoutes(
       } ~
         path(Segment) { domain =>
           pathEndOrSingleSlash {
-            getDomainInfo(domain) ~ postUser(domain) ~ editDomain(domain, user) ~ deleteDomain(
+            getDomainInfo(domain) ~ editDomain(domain, user) ~ deleteDomain(
               domain,
               user
             )
@@ -48,12 +47,6 @@ class DomainRoutes(
 
   private def getDomainInfo(remaining: String): Route = get {
     svcCall[WebDomain](domainService.getDomainInfo(remaining))
-  }
-
-  private def postUser(remaining: String): Route = post {
-    entity(as[UserIn]) { user =>
-      svcCall[NoResult](domainService.addUser(remaining, user.userName))
-    }
   }
 
   private def editDomain(remaining: String, user: User): Route = put {
