@@ -93,6 +93,7 @@ class ActorDomainService(
         case Domain.Done                   => noOutput
         case Domain.NotFound(path)         => notFound(path)
         case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
+        case Domain.UnAuthorized           => forbidden
         case _                             => unexpectedMessage
       }
 

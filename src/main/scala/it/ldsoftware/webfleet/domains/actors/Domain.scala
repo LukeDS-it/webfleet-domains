@@ -107,7 +107,10 @@ object Domain {
         case AddUser(user, replyTo) =>
           Effect.persist(UserAdded(user)).thenReply(replyTo)(_ => Done)
         case RemoveUser(user, replyTo) =>
-          Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
+          if (webDomain.creator != user)
+            Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
+          else
+            Effect.reply(replyTo)(UnAuthorized)
       }
 
     override def process(event: Event): State = event match {

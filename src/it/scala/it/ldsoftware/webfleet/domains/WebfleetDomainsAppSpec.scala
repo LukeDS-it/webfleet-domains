@@ -189,7 +189,7 @@ class WebfleetDomainsAppSpec
     }
   }
 
-  Feature("The service allows website managers to share their websites") {
+  Feature("The service allows users to share their websites") {
     Scenario("The manager adds an user to their site") {
       Given("The website manager")
       val jwt = auth0Server.jwtHeader("manager", Permissions.AllPermissions)
@@ -309,6 +309,37 @@ class WebfleetDomainsAppSpec
 
         resp should have size 0
       }
+    }
+
+    Scenario("The website creator cannot be removed from the site") {
+      Given("The website manager")
+      val jwt = auth0Server.jwtHeader("invincible", Permissions.AllPermissions)
+
+      And("A website created by the manager")
+      val form = CreateForm(
+        title = "Manager removal",
+        id = "removing-manager",
+        icon = "user"
+      )
+      createDomain(form, jwt)
+      eventually {
+        val resp = http
+          .singleRequest(
+            HttpRequest(uri = "http://localhost:8080/api/v1/domains").withHeaders(Seq(jwt))
+          )
+          .flatMap(Unmarshal(_).to[List[AccessGrant]])
+          .futureValue
+
+        resp should have size 1
+        resp.head shouldBe AccessGrant("removing-manager", "Manager removal", "user", "invincible")
+      }
+
+      Then("The manager cannot be unassigned from the site")
+      val req = HttpRequest(
+        uri = "http://localhost:8080/api/v1/domains/removing-manager/users/invincible",
+        method = HttpMethods.DELETE
+      ).withHeaders(Seq(jwt))
+      http.singleRequest(req).map(resp => resp.status).futureValue shouldBe StatusCodes.Forbidden
     }
   }
 
