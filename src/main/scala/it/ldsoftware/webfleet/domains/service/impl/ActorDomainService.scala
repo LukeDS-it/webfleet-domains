@@ -74,9 +74,27 @@ class ActorDomainService(
         case _                             => unexpectedMessage
       }
 
-  override def addUser(path: String, user: String): Future[ServiceResult[NoResult]] = ???
+  override def addUser(path: String, user: String): Future[ServiceResult[NoResult]] =
+    clusterSharding
+      .entityRefFor(Domain.Key, path)
+      .ask[Domain.Response](Domain.AddUser(user, _))
+      .map {
+        case Domain.Done                   => noOutput
+        case Domain.NotFound(path)         => notFound(path)
+        case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
+        case _                             => unexpectedMessage
+      }
 
-  override def removeUser(path: String, user: String): Future[ServiceResult[NoResult]] = ???
+  override def removeUser(path: String, user: String): Future[ServiceResult[NoResult]] =
+    clusterSharding
+      .entityRefFor(Domain.Key, path)
+      .ask[Domain.Response](Domain.RemoveUser(user, _))
+      .map {
+        case Domain.Done                   => noOutput
+        case Domain.NotFound(path)         => notFound(path)
+        case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
+        case _                             => unexpectedMessage
+      }
 
   private def unexpectedMessage[T]: ServiceResult[T] =
     unexpectedError(new Error(), "Unexpected response from actor")

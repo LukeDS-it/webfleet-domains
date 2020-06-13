@@ -16,20 +16,31 @@ class SlickDomainReadService(db: Database)(implicit ec: ExecutionContext)
 
   val accessList = TableQuery[AccessGrants]
 
+  override def getAnyRule(domain: String): Future[AccessGrant] =
+    db.run(accessList.filter(_.id === domain).result.head)
+
   def insertRule(content: AccessGrant): Future[AccessGrant] =
     db.run(accessList.returning(accessList) += content)
 
-  override def editRule(
-      id: String,
-      user: String,
-      title: Option[String],
-      icon: Option[String]
-  ): Future[Int] = {
-    ???
+  override def editRule(dom: String, title: Option[String], icon: Option[String]): Future[Int] = {
+    val action = (title, icon) match {
+      case (Some(t), Some(d)) =>
+        sqlu"update access_grants set title = $t, icon = $d where id = $dom"
+      case (Some(t), None) =>
+        sqlu"update access_grants set title = $t where id = $dom"
+      case (None, Some(d)) =>
+        sqlu"update access_grants set icon = $d where id = $dom"
+      case (None, None) =>
+        DBIO.successful(1)
+    }
+    db.run(action)
   }
 
-  override def deleteRule(id: String, user: String): Future[Int] =
-    db.run(accessList.filter(_.id === id).filter(_.user === user).delete)
+  override def deleteRule(domain: String, user: String): Future[Int] =
+    db.run(accessList.filter(_.id === domain).filter(_.user === user).delete)
+
+  def deleteAllRules(domain: String): Future[Int] =
+    db.run(accessList.filter(_.id === domain).delete)
 
   override def search(filter: DomainFilter): Future[ServiceResult[List[AccessGrant]]] = {
     val query = accessList
