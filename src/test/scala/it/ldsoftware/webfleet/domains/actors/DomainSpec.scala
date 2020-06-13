@@ -114,6 +114,33 @@ class DomainSpec
       rootTestKit.runCommand[Response](Read).reply shouldBe NotFound("my-website")
     }
 
+    "add an user" in {
+      val form = domainForm
+      val user = superUser
+
+      rootTestKit.runCommand[Response](Create(form, user, _))
+      val result = rootTestKit.runCommand[Response](AddUser("user-to-add", _))
+
+      val expected = getExpectedContent(form, user)
+      val nAccess = expected.accessList + "user-to-add"
+
+      result.reply shouldBe Done
+      result.event shouldBe UserAdded("user-to-add")
+      result.state shouldBe Existing(expected.copy(accessList = nAccess))
+    }
+
+    "remove an user" in {
+      val form = domainForm
+      val user = superUser
+
+      rootTestKit.runCommand[Response](Create(form, user, _))
+      rootTestKit.runCommand[Response](AddUser("user-to-remove", _))
+      val result = rootTestKit.runCommand[Response](RemoveUser("user-to-remove", _))
+
+      result.reply shouldBe Done
+      result.event shouldBe UserRemoved("user-to-remove")
+      result.state shouldBe Existing(getExpectedContent(form, user))
+    }
   }
 
   "The init function" should {

@@ -26,12 +26,16 @@ object Domain {
   case class Create(form: CreateForm, user: User, replyTo: Requester) extends Command
   case class Update(form: UpdateForm, user: User, replyTo: Requester) extends Command
   case class Delete(user: User, replyTo: Requester) extends Command
+  case class AddUser(name: String, replyTo: Requester) extends Command
+  case class RemoveUser(name: String, replyTo: Requester) extends Command
 
   sealed trait Event extends CborSerializable
 
   case class Created(form: CreateForm, user: User) extends Event
   case class Updated(form: UpdateForm, user: User) extends Event
   case class Deleted(user: User) extends Event
+  case class UserAdded(name: String) extends Event
+  case class UserRemoved(name: String) extends Event
 
   sealed trait Response extends CborSerializable
 
@@ -100,6 +104,10 @@ object Domain {
           Effect.persist(Updated(form, user)).thenReply(replyTo)(_ => Done)
         case Delete(user, replyTo) =>
           Effect.persist(Deleted(user)).thenReply(replyTo)(_ => Done)
+        case AddUser(user, replyTo) =>
+          Effect.persist(UserAdded(user)).thenReply(replyTo)(_ => Done)
+        case RemoveUser(user, replyTo) =>
+          Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
       }
 
     override def process(event: Event): State = event match {
@@ -112,6 +120,10 @@ object Domain {
         )
       case Deleted(_) =>
         NonExisting(webDomain.id)
+      case UserAdded(user) =>
+        Existing(webDomain.copy(accessList = webDomain.accessList + user))
+      case UserRemoved(user) =>
+        Existing(webDomain.copy(accessList = webDomain.accessList - user))
       case e =>
         throw new IllegalStateException(s"Cannot process $e")
     }
