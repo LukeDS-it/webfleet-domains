@@ -35,7 +35,8 @@ class ReadSideEventConsumer(readService: DomainReadService)(implicit ec: Executi
 
     case Domain.UserAdded(userName) =>
       logger.debug(s"Adding user $userName to domain $actorId")
-      readService.getAnyRule(actorId)
+      readService
+        .getAnyRule(actorId)
         .map(grant => grant.copy(user = userName))
         .flatMap(readService.insertRule)
         .map(_ => Done)
