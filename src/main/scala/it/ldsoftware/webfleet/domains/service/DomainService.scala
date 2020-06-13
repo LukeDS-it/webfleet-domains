@@ -8,16 +8,22 @@ import scala.concurrent.Future
 
 trait DomainService {
 
-  def getDomainInfo(path: String): Future[ServiceResult[WebDomain]]
+  def getDomainInfo(domain: String): Future[ServiceResult[WebDomain]]
 
   def createDomain(form: CreateForm, user: User): Future[ServiceResult[String]]
 
-  def updateDomain(path: String, form: UpdateForm, user: User): Future[ServiceResult[NoResult]]
+  def updateDomain(domain: String, form: UpdateForm, user: User): Future[ServiceResult[NoResult]]
 
-  def deleteDomain(path: String, user: User): Future[ServiceResult[NoResult]]
+  def deleteDomain(domain: String, user: User): Future[ServiceResult[NoResult]]
 
-  def addUser(path: String, user: String, permissions: Set[String]): Future[ServiceResult[NoResult]]
+  def addUser(
+      domain: String,
+      user: String,
+      permissions: Set[String]
+  ): Future[ServiceResult[NoResult]]
 
-  def removeUser(path: String, user: String): Future[ServiceResult[NoResult]]
+  def removeUser(domain: String, user: String): Future[ServiceResult[NoResult]]
+
+  def checkPermissions(domain: String, user: String, perm: String): Future[ServiceResult[NoResult]]
 
 }

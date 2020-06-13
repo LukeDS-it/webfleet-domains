@@ -28,6 +28,7 @@ object Domain {
   case class Delete(user: User, replyTo: Requester) extends Command
   case class AddUser(name: String, permissions: Set[String], replyTo: Requester) extends Command
   case class RemoveUser(name: String, replyTo: Requester) extends Command
+  case class HasPermission(name: String, permission: String, replyTo: Requester) extends Command
 
   sealed trait Event extends CborSerializable
 
@@ -109,6 +110,11 @@ object Domain {
         case RemoveUser(user, replyTo) =>
           if (webDomain.creator != user)
             Effect.persist(UserRemoved(user)).thenReply(replyTo)(_ => Done)
+          else
+            Effect.reply(replyTo)(UnAuthorized)
+        case HasPermission(user, permission, replyTo) =>
+          if (webDomain.accessList.get(user).exists(_.contains(permission)))
+            Effect.reply(replyTo)(Done)
           else
             Effect.reply(replyTo)(UnAuthorized)
       }

@@ -15,6 +15,7 @@ class AllRoutes(
   def routes: Route =
     new DomainRoutes(domainService, readService, extractor).routes ~
       new UserRoutes(domainService, extractor).routes ~
+      new PermissionsRoutes(domainService, extractor).routes ~
       new HealthRoutes(healthService, extractor).routes
 
 }

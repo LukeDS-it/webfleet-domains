@@ -5,7 +5,7 @@ import java.util.{Collections, Properties}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.{Uri, _}
 import akka.http.scaladsl.model.headers.Location
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.{Http, HttpExt}
@@ -191,10 +191,10 @@ class WebfleetDomainsAppSpec
 
   Feature("The service allows users to share their websites") {
     Scenario("The manager adds an user to their site") {
-      Given("The website manager")
+      Given("the website manager")
       val jwt = auth0Server.jwtHeader("manager", Permissions.AllPermissions)
 
-      And("A website created by the manager")
+      And("a website created by the manager")
       val form = CreateForm(
         title = "Adding users",
         id = "adding-users",
@@ -213,21 +213,11 @@ class WebfleetDomainsAppSpec
         resp.head shouldBe AccessGrant("adding-users", "Adding users", "user", "manager")
       }
 
-      When("The manager shares the site with another user")
-      Marshal(UserIn("shared-user", Set(Permissions.Contents.Insert)))
-        .to[RequestEntity]
-        .map(e =>
-          HttpRequest(
-            method = HttpMethods.POST,
-            uri = s"http://localhost:8080/api/v1/domains/adding-users/users",
-            entity = e
-          ).withHeaders(Seq(jwt))
-        )
-        .map(r => http.singleRequest(r))
-        .flatMap(f => f.map(resp => resp.status))
-        .futureValue shouldBe StatusCodes.NoContent
+      When("the manager shares the site with another user")
+      shareWith("adding-users", "shared-user", Set(Permissions.Contents.Insert), jwt)
+        .shouldBe(StatusCodes.NoContent)
 
-      Then("That user can see the website in his list")
+      Then("that user can see the website in his list")
       val sharedJwt = auth0Server.jwtHeader("shared-user", Permissions.AllPermissions)
       eventually {
         val resp = http
@@ -243,10 +233,10 @@ class WebfleetDomainsAppSpec
     }
 
     Scenario("The manager removes an user from their site") {
-      Given("The website manager")
+      Given("the website manager")
       val jwt = auth0Server.jwtHeader("rem-manager", Permissions.AllPermissions)
 
-      And("A website created by the manager")
+      And("a website created by the manager")
       val form = CreateForm(
         title = "Removing users",
         id = "removing-users",
@@ -265,19 +255,9 @@ class WebfleetDomainsAppSpec
         resp.head shouldBe AccessGrant("removing-users", "Removing users", "user", "rem-manager")
       }
 
-      And("The manager had shared the site with another user")
-      Marshal(UserIn("removed-user", Set(Permissions.Contents.Insert)))
-        .to[RequestEntity]
-        .map(e =>
-          HttpRequest(
-            method = HttpMethods.POST,
-            uri = s"http://localhost:8080/api/v1/domains/removing-users/users",
-            entity = e
-          ).withHeaders(Seq(jwt))
-        )
-        .map(r => http.singleRequest(r))
-        .flatMap(f => f.map(resp => resp.status))
-        .futureValue shouldBe StatusCodes.NoContent
+      And("the manager had shared the site with another user")
+      shareWith("removing-users", "removed-user", Set(Permissions.Contents.Insert), jwt)
+        .shouldBe(StatusCodes.NoContent)
 
       val sharedJwt = auth0Server.jwtHeader("removed-user", Permissions.AllPermissions)
       eventually {
@@ -292,7 +272,7 @@ class WebfleetDomainsAppSpec
         resp.head shouldBe AccessGrant("removing-users", "Removing users", "user", "removed-user")
       }
 
-      When("The manager removes grant to that user")
+      When("the manager removes grant to that user")
       val req = HttpRequest(
         uri = "http://localhost:8080/api/v1/domains/removing-users/users/removed-user",
         method = HttpMethods.DELETE
@@ -312,10 +292,10 @@ class WebfleetDomainsAppSpec
     }
 
     Scenario("The website creator cannot be removed from the site") {
-      Given("The website manager")
+      Given("the website manager")
       val jwt = auth0Server.jwtHeader("invincible", Permissions.AllPermissions)
 
-      And("A website created by the manager")
+      And("a website created by the manager")
       val form = CreateForm(
         title = "Manager removal",
         id = "removing-manager",
@@ -334,7 +314,7 @@ class WebfleetDomainsAppSpec
         resp.head shouldBe AccessGrant("removing-manager", "Manager removal", "user", "invincible")
       }
 
-      Then("The manager cannot be unassigned from the site")
+      Then("the manager cannot be unassigned from the site")
       val req = HttpRequest(
         uri = "http://localhost:8080/api/v1/domains/removing-manager/users/invincible",
         method = HttpMethods.DELETE
@@ -372,6 +352,66 @@ class WebfleetDomainsAppSpec
     }
   }
 
+  Feature("The service allows other services to validate user permissions on a website") {
+    Scenario("Users with permissions on a website are allowed to access the resource") {
+      Given("a website")
+      val jwt = auth0Server.jwtHeader("val-01", Permissions.AllPermissions)
+      val form = CreateForm("Validation OK", "validation-ok", "icon")
+      createDomain(form, jwt)
+
+      When("an user is given permission to create contents")
+      shareWith("validation-ok", "val-02", Set(Permissions.Contents.Insert), jwt) shouldBe StatusCodes.NoContent
+
+      Then("the check endpoint is accessible")
+      val uri = Uri("http://localhost:8080/api/v1/domains/validation-ok/permissions")
+        .withQuery(Uri.Query("user" -> "val-02", "permission" -> Permissions.Contents.Insert))
+      eventually {
+        http
+          .singleRequest(HttpRequest(uri = uri))
+          .map(_.status)
+          .futureValue shouldBe StatusCodes.NoContent
+      }
+    }
+
+    Scenario("Users without a permission on a website are not allowed to access the resource") {
+      Given("a website")
+      val jwt = auth0Server.jwtHeader("inval-01", Permissions.AllPermissions)
+      val form = CreateForm("Validation Failed", "validation-failed-1", "icon")
+      createDomain(form, jwt)
+
+      When("an user is not given permission to add users")
+      shareWith("validation-failed-1", "inval-02", Set(Permissions.Contents.Insert), jwt) shouldBe StatusCodes.NoContent
+
+      Then("ahe check endpoint is not")
+      val uri = Uri("http://localhost:8080/api/v1/domains/validation-failed-1/permissions")
+        .withQuery(Uri.Query("user" -> "inval-02", "permission" -> Permissions.Users.Add))
+      eventually {
+        http
+          .singleRequest(HttpRequest(uri = uri))
+          .map(_.status)
+          .futureValue shouldBe StatusCodes.Forbidden
+      }
+    }
+
+    Scenario("Users that have no access to a website are not allowed to access the resource") {
+      Given("a website")
+      val jwt = auth0Server.jwtHeader("missing-01", Permissions.AllPermissions)
+      val form = CreateForm("Validation Failed", "validation-failed-2", "icon")
+      createDomain(form, jwt)
+
+      When("an user is not given access to a website")
+      Then("the check endpoint is not accessible")
+      val uri = Uri("http://localhost:8080/api/v1/domains/validation-failed-2/permissions")
+        .withQuery(Uri.Query("user" -> "any-user", "permission" -> Permissions.Contents.Insert))
+      eventually {
+        http
+          .singleRequest(HttpRequest(uri = uri))
+          .map(_.status)
+          .futureValue shouldBe StatusCodes.Forbidden
+      }
+    }
+  }
+
   def createDomain(form: CreateForm, jwt: HttpHeader): (StatusCode, Seq[HttpHeader]) = {
     Marshal(form)
       .to[RequestEntity]
@@ -386,4 +426,18 @@ class WebfleetDomainsAppSpec
       .flatMap(f => f.map(resp => (resp.status, resp.headers)))
       .futureValue
   }
+
+  def shareWith(site: String, user: String, permissions: Set[String], jwt: HttpHeader): StatusCode =
+    Marshal(UserIn(user, permissions))
+      .to[RequestEntity]
+      .map(e =>
+        HttpRequest(
+          method = HttpMethods.POST,
+          uri = s"http://localhost:8080/api/v1/domains/$site/users",
+          entity = e
+        ).withHeaders(Seq(jwt))
+      )
+      .map(r => http.singleRequest(r))
+      .flatMap(f => f.map(resp => resp.status))
+      .futureValue
 }
