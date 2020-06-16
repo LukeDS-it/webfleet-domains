@@ -1,5 +1,5 @@
 # webfleet-domains
-![Pull Request to Master](https://github.com/LukeDS-it/webfleet-domains/workflows/Pull%20Request%20to%20Master/badge.svg)
+![build](https://github.com/LukeDS-it/webfleet-domains/workflows/build/badge.svg)
 
 This microservice is part of Webfleet, a new distributed cms.
 
@@ -31,3 +31,8 @@ The following are the environment variables that can be set or overridden
 | AUTH_DOMAIN       |                                             | Domain of Auth0 compliant provider. Used to look for $AUTH_DOMAIN/.well-known/jwks.json |
 | AUTH_AUDIENCE     |                                             | Audience to validate the jwt token                                                      |
 | AUTH_ISSUER       |                                             | Issuer to validate the jwt token                                                        |
+| KAFKA_BROKERS     |                                             | List of kafka brokers (to use with heroku use CLOUDKARAFKA_ prefix instead)             |
+| KAFKA_SASL        |                                             | true if ssl is enabled (to use with heroku use CLOUDKARAFKA_ prefix instead)            |
+| KAFKA_USERNAME    |                                             | Username to connect to kafka (to use with heroku use CLOUDKARAFKA_ prefix instead)      |
+| KAFKA_PASSWORD    |                                             | Password to connect to kafka (to use with heroku use CLOUDKARAFKA_ prefix instead)      |
+| DOMAINS_TOPIC     | webfleet-domains                            | Name of the kafka topic where to publish domain events                                  |
