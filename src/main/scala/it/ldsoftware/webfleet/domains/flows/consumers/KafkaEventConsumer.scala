@@ -16,10 +16,10 @@ class KafkaEventConsumer(kafkaProducer: KafkaProducer[String, String], topic: St
     with LazyLogging {
 
   override def consume(actorId: String, event: Event): Future[Done] = event match {
-    case Created(_, _) | Updated(_, _) | Deleted(_) =>
+    case Created(_, _) | Deleted(_) =>
       logger.debug(s"Sending ${event.getClass.getSimpleName} event to $topic")
       Future(event.asJson.noSpaces)
-        .map(new ProducerRecord[String, String](topic, _))
+        .map(new ProducerRecord[String, String](topic, actorId, _))
         .map(kafkaProducer.send)
         .map(_.get)
         .recover(th => logger.error(s"Error while sending $event to $topic", th))
