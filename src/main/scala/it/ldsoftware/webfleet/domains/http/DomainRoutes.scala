@@ -42,11 +42,12 @@ class DomainRoutes(
     }
   }
 
-  private def getDomainInfo(remaining: String): Route = login { user =>
+  private def getDomainInfo(remaining: String): Route =
     get {
-      svcCall[WebDomain](domainService.getDomainInfo(remaining))
+      pathEndOrSingleSlash {
+        login { user => svcCall[WebDomain](domainService.getDomainInfo(remaining)) }
+      }
     }
-  }
 
   private def editDomain(remaining: String): Route = login { user =>
     put {

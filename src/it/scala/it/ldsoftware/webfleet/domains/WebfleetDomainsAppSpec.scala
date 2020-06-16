@@ -5,8 +5,8 @@ import java.util.{Collections, Properties}
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{Uri, _}
 import akka.http.scaladsl.model.headers.Location
+import akka.http.scaladsl.model.{Uri, _}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.Materializer
@@ -18,6 +18,7 @@ import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
+import it.ldsoftware.webfleet.domains.http.model.out.PermissionInfo
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.model.ApplicationHealth
@@ -353,7 +354,7 @@ class WebfleetDomainsAppSpec
   }
 
   Feature("The service allows other services to validate user permissions on a website") {
-    Scenario("Users with permissions on a website are allowed to access the resource") {
+    Scenario("Users with access to a website have a set of permissions on that site") {
       Given("a website")
       val jwt = auth0Server.jwtHeader("val-01", Permissions.AllPermissions)
       val form = CreateForm("Validation OK", "validation-ok", "icon")
@@ -362,52 +363,50 @@ class WebfleetDomainsAppSpec
       When("an user is given permission to create contents")
       shareWith("validation-ok", "val-02", Set(Permissions.Contents.Insert), jwt) shouldBe StatusCodes.NoContent
 
-      Then("the check endpoint is accessible")
-      val uri = Uri("http://localhost:8080/api/v1/domains/validation-ok/permissions")
-        .withQuery(Uri.Query("user" -> "val-02", "permission" -> Permissions.Contents.Insert))
+      Then("the returned set of permissions should contain the insert content permission")
+      val uri = Uri("http://localhost:8080/api/v1/domains/validation-ok/users/val-02/permissions")
+
       eventually {
         http
           .singleRequest(HttpRequest(uri = uri))
-          .map(_.status)
-          .futureValue shouldBe StatusCodes.NoContent
+          .flatMap(res => Unmarshal(res).to[PermissionInfo])
+          .futureValue shouldBe PermissionInfo(Set(Permissions.Contents.Insert))
       }
     }
 
-    Scenario("Users without a permission on a website are not allowed to access the resource") {
+    Scenario("Users without access to a website have no permissions on that site") {
       Given("a website")
       val jwt = auth0Server.jwtHeader("inval-01", Permissions.AllPermissions)
-      val form = CreateForm("Validation Failed", "validation-failed-1", "icon")
+      val form = CreateForm("Validation Failed", "no-access", "icon")
       createDomain(form, jwt)
 
-      When("an user is not given permission to add users")
-      shareWith("validation-failed-1", "inval-02", Set(Permissions.Contents.Insert), jwt) shouldBe StatusCodes.NoContent
+      And("an user with no access on that website")
 
-      Then("ahe check endpoint is not")
-      val uri = Uri("http://localhost:8080/api/v1/domains/validation-failed-1/permissions")
-        .withQuery(Uri.Query("user" -> "inval-02", "permission" -> Permissions.Users.Add))
+      Then("the returned set of permissions should be empty")
+      val uri = Uri("http://localhost:8080/api/v1/domains/no-access/users/inval-02/permissions")
+
       eventually {
         http
           .singleRequest(HttpRequest(uri = uri))
-          .map(_.status)
-          .futureValue shouldBe StatusCodes.Forbidden
+          .flatMap(res => Unmarshal(res).to[PermissionInfo])
+          .futureValue shouldBe PermissionInfo(Set())
       }
     }
 
-    Scenario("Users that have no access to a website are not allowed to access the resource") {
+    Scenario("The creator always has all permissions on its website") {
       Given("a website")
-      val jwt = auth0Server.jwtHeader("missing-01", Permissions.AllPermissions)
-      val form = CreateForm("Validation Failed", "validation-failed-2", "icon")
+      val jwt = auth0Server.jwtHeader("creator", Permissions.AllPermissions)
+      val form = CreateForm("Validation Failed", "creator-perms", "icon")
       createDomain(form, jwt)
 
-      When("an user is not given access to a website")
-      Then("the check endpoint is not accessible")
-      val uri = Uri("http://localhost:8080/api/v1/domains/validation-failed-2/permissions")
-        .withQuery(Uri.Query("user" -> "any-user", "permission" -> Permissions.Contents.Insert))
+      When("asking the creator's permissions")
+      Then("the returned set should have all permissions")
+      val uri = Uri("http://localhost:8080/api/v1/domains/creator-perms/users/creator/permissions")
       eventually {
         http
           .singleRequest(HttpRequest(uri = uri))
-          .map(_.status)
-          .futureValue shouldBe StatusCodes.Forbidden
+          .flatMap(res => Unmarshal(res).to[PermissionInfo])
+          .futureValue shouldBe PermissionInfo(Permissions.AllPermissions)
       }
     }
   }
