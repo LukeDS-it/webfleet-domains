@@ -28,9 +28,7 @@ class UserRoutes(domainService: DomainService, val extractor: UserExtractor) ext
   }
 
   private def removeUser(domain: String, user: String): Route = delete {
-    login { _ =>
-      svcCall[NoResult](domainService.removeUser(domain, user))
-    }
+    login { _ => svcCall[NoResult](domainService.removeUser(domain, user)) }
   }
 
 }
