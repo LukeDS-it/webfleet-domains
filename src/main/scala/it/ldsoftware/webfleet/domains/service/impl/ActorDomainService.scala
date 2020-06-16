@@ -101,22 +101,6 @@ class ActorDomainService(
         case _                             => unexpectedMessage
       }
 
-  override def checkPermissions(
-      domain: String,
-      user: String,
-      perm: String
-  ): Future[ServiceResult[NoResult]] =
-    clusterSharding
-      .entityRefFor(Domain.Key, domain)
-      .ask[Domain.Response](Domain.HasPermission(user, perm, _))
-      .map {
-        case Domain.Done                   => noOutput
-        case Domain.NotFound(path)         => notFound(path)
-        case Domain.UnexpectedError(error) => unexpectedError(error, error.getMessage)
-        case Domain.UnAuthorized           => forbidden
-        case _                             => unexpectedMessage
-      }
-
   private def unexpectedMessage[T]: ServiceResult[T] =
     unexpectedError(new Error(), "Unexpected response from actor")
 }

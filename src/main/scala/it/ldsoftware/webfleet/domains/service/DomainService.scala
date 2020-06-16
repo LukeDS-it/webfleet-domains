@@ -24,6 +24,4 @@ trait DomainService {
 
   def removeUser(domain: String, user: String): Future[ServiceResult[NoResult]]
 
-  def checkPermissions(domain: String, user: String, perm: String): Future[ServiceResult[NoResult]]
-
 }
