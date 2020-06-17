@@ -4,25 +4,30 @@ package it.ldsoftware.webfleet.domains.security
 object Permissions {
 
   object Domains {
-    val Update = "domains.update"
+    val Read = "domains:read"
+    val Update = "domains:update"
   }
 
   object Users {
-    val Add = "users.add"
-    val Remove = "users.remove"
+    val Add = "users:add"
+    val Remove = "users:remove"
   }
 
   object Contents {
-    val Insert = "contents.insert"
-    val Remove = "contents.remove"
+    val Read = "content:read"
+    val Create = "content:create"
+    val Delete = "content:delete"
+    val Publish = "content:publish"
+    val Review = "content:review"
   }
 
   val AllPermissions: Set[String] = Set(
     Domains.Update,
+    Domains.Read,
     Users.Add,
     Users.Remove,
-    Contents.Insert,
-    Contents.Remove
+    Contents.Create,
+    Contents.Delete
   )
 
 }

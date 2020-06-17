@@ -27,8 +27,8 @@ class DomainRoutesSpec extends BaseHttpSpec {
       when(readService.search(DomainFilter(None, None, "me")))
         .thenReturn(Future.successful(success(expected)))
 
-      when(defaultExtractor.extractUser(CorrectJWT))
-        .thenReturn(Some(User("me", Set(), Some(CorrectJWT))))
+      when(defaultExtractor.extractUser(CorrectJWT, None))
+        .thenReturn(Future.successful(Some(User("me", Set(), Some(CorrectJWT)))))
 
       HttpRequest(uri = uri) ~>
         addCredentials(OAuth2BearerToken(CorrectJWT)) ~>
@@ -51,7 +51,8 @@ class DomainRoutesSpec extends BaseHttpSpec {
       val user = User("name", Set(), None)
 
       when(domainService.createDomain(form, user)).thenReturn(Future.successful(created("id")))
-      when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      when(defaultExtractor.extractUser(CorrectJWT, None))
+        .thenReturn(Future.successful(Some(user)))
 
       val req = Marshal(form)
         .to[RequestEntity]
@@ -82,11 +83,12 @@ class DomainRoutesSpec extends BaseHttpSpec {
         "name",
         Map("user1" -> Permissions.AllPermissions, "user2" -> Permissions.AllPermissions)
       )
-      val user = User("name", Set(), None)
+      val user = User("name", Permissions.AllPermissions, None)
 
       when(domainService.getDomainInfo("website-id"))
         .thenReturn(Future.successful(success(expected)))
-      when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      when(defaultExtractor.extractUser(CorrectJWT, Some("website-id")))
+        .thenReturn(Future.successful(Some(user)))
 
       HttpRequest(uri = uri, method = HttpMethods.GET) ~>
         addCredentials(OAuth2BearerToken(CorrectJWT)) ~>
@@ -110,7 +112,8 @@ class DomainRoutesSpec extends BaseHttpSpec {
 
       when(domainService.updateDomain("website-id", form, user))
         .thenReturn(Future.successful(noOutput))
-      when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      when(defaultExtractor.extractUser(CorrectJWT, Some("website-id")))
+        .thenReturn(Future.successful(Some(user)))
 
       val req = Marshal(form)
         .to[RequestEntity]
@@ -137,7 +140,8 @@ class DomainRoutesSpec extends BaseHttpSpec {
       val user = User("name", Set(), None)
 
       when(domainService.deleteDomain("website-id", user)).thenReturn(Future.successful(noOutput))
-      when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      when(defaultExtractor.extractUser(CorrectJWT, Some("website-id")))
+        .thenReturn(Future.successful(Some(user)))
 
       HttpRequest(uri = uri, method = HttpMethods.DELETE) ~>
         addCredentials(OAuth2BearerToken(CorrectJWT)) ~>

@@ -2,18 +2,24 @@ package it.ldsoftware.webfleet.domains.config
 
 import java.sql.Connection
 
+import akka.actor.typed.ActorSystem
+import akka.util.Timeout
 import com.auth0.jwk.{JwkProvider, JwkProviderBuilder}
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.flows.consumers.{KafkaEventConsumer, ReadSideEventConsumer}
 import it.ldsoftware.webfleet.domains.flows.{ContentEventConsumer, OffsetManager}
-import it.ldsoftware.webfleet.domains.http.utils.{Auth0UserExtractor, UserExtractor}
+import it.ldsoftware.webfleet.domains.http.utils._
 import it.ldsoftware.webfleet.domains.service.impl.{BasicHealthService, SlickDomainReadService}
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, HealthService}
 import org.apache.kafka.clients.producer.KafkaProducer
 
 import scala.concurrent.ExecutionContext
 
-class ApplicationContext(appConfig: AppConfig)(implicit ec: ExecutionContext) {
+class ApplicationContext(appConfig: AppConfig)(
+    implicit ec: ExecutionContext,
+    system: ActorSystem[_],
+    timeout: Timeout
+) {
 
   lazy val db: Database = Database.forConfig("slick.db")
 
@@ -22,7 +28,12 @@ class ApplicationContext(appConfig: AppConfig)(implicit ec: ExecutionContext) {
   lazy val provider: JwkProvider = new JwkProviderBuilder(appConfig.jwtConfig.domain).build()
 
   lazy val extractor: UserExtractor =
-    new Auth0UserExtractor(provider, appConfig.jwtConfig.issuer, appConfig.jwtConfig.audience)
+    new Auth0UserExtractor(
+      provider,
+      appConfig.jwtConfig.issuer,
+      appConfig.jwtConfig.audience,
+      new ActorBasedPermissionProvider(system)
+    )
 
   lazy val readService: DomainReadService = new SlickDomainReadService(db)
 

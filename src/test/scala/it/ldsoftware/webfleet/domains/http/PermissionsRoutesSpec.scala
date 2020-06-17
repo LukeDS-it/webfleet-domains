@@ -44,7 +44,7 @@ class PermissionsRoutesSpec extends BaseHttpSpec {
 
     "return empty set for an user not allowed to access the domain" in {
       val uri = Uri("/api/v1/domains/website-id/users/another-user/permissions")
-        .withQuery(Query("user" -> "an-user", "permission" -> Permissions.Contents.Insert))
+        .withQuery(Query("user" -> "an-user", "permission" -> Permissions.Contents.Create))
 
       val domainService = mock[DomainService]
 

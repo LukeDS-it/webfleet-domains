@@ -215,7 +215,7 @@ class WebfleetDomainsAppSpec
       }
 
       When("the manager shares the site with another user")
-      shareWith("adding-users", "shared-user", Set(Permissions.Contents.Insert), jwt)
+      shareWith("adding-users", "shared-user", Set(Permissions.Contents.Create), jwt)
         .shouldBe(StatusCodes.NoContent)
 
       Then("that user can see the website in his list")
@@ -257,7 +257,7 @@ class WebfleetDomainsAppSpec
       }
 
       And("the manager had shared the site with another user")
-      shareWith("removing-users", "removed-user", Set(Permissions.Contents.Insert), jwt)
+      shareWith("removing-users", "removed-user", Set(Permissions.Contents.Create), jwt)
         .shouldBe(StatusCodes.NoContent)
 
       val sharedJwt = auth0Server.jwtHeader("removed-user", Permissions.AllPermissions)
@@ -361,7 +361,7 @@ class WebfleetDomainsAppSpec
       createDomain(form, jwt)
 
       When("an user is given permission to create contents")
-      shareWith("validation-ok", "val-02", Set(Permissions.Contents.Insert), jwt) shouldBe StatusCodes.NoContent
+      shareWith("validation-ok", "val-02", Set(Permissions.Contents.Create), jwt) shouldBe StatusCodes.NoContent
 
       Then("the returned set of permissions should contain the insert content permission")
       val uri = Uri("http://localhost:8080/api/v1/domains/validation-ok/users/val-02/permissions")
@@ -370,7 +370,7 @@ class WebfleetDomainsAppSpec
         http
           .singleRequest(HttpRequest(uri = uri))
           .flatMap(res => Unmarshal(res).to[PermissionInfo])
-          .futureValue shouldBe PermissionInfo(Set(Permissions.Contents.Insert))
+          .futureValue shouldBe PermissionInfo(Set(Permissions.Contents.Create))
       }
     }
 
