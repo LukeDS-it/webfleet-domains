@@ -8,7 +8,7 @@ import com.auth0.jwk.{JwkProvider, JwkProviderBuilder}
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.flows.consumers.{KafkaEventConsumer, ReadSideEventConsumer}
 import it.ldsoftware.webfleet.domains.flows.{ContentEventConsumer, OffsetManager}
-import it.ldsoftware.webfleet.domains.http.utils.{ActorBasedPermissionProvider, Auth0UserExtractor, UserExtractor}
+import it.ldsoftware.webfleet.domains.http.utils._
 import it.ldsoftware.webfleet.domains.service.impl.{BasicHealthService, SlickDomainReadService}
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, HealthService}
 import org.apache.kafka.clients.producer.KafkaProducer
