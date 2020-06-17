@@ -7,6 +7,7 @@ import it.ldsoftware.webfleet.domains.actors.model.{CreateForm, UpdateForm, WebD
 import it.ldsoftware.webfleet.domains.http.model.out.RestError
 import it.ldsoftware.webfleet.domains.http.utils.{RouteHelper, UserExtractor}
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
+import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.model.{DomainFilter, NoResult}
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
 
@@ -45,7 +46,9 @@ class DomainRoutes(
   private def getDomainInfo(remaining: String): Route =
     get {
       pathEndOrSingleSlash {
-        login { user => svcCall[WebDomain](domainService.getDomainInfo(remaining)) }
+        authorize(remaining, Permissions.Domains.Read) { _ =>
+          svcCall[WebDomain](domainService.getDomainInfo(remaining))
+        }
       }
     }
 

@@ -1,15 +1,15 @@
 package it.ldsoftware.webfleet.domains.http
 
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import akka.http.scaladsl.model._
+import akka.http.scaladsl.model.headers.OAuth2BearerToken
+import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.utils.BaseHttpSpec
 import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 import it.ldsoftware.webfleet.domains.service.DomainService
 import it.ldsoftware.webfleet.domains.service.model._
 import org.mockito.Mockito.{verify, when}
-import io.circe.generic.auto._
 
 import scala.concurrent.Future
 
@@ -21,10 +21,11 @@ class UserRoutesSpec extends BaseHttpSpec {
 
       val domainService = mock[DomainService]
 
-      val user = User("name", Set(), None)
+      val user = User("name", Permissions.AllPermissions, None)
       when(domainService.addUser("website-id", "user", Permissions.AllPermissions))
         .thenReturn(Future.successful(noOutput))
-      when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      when(defaultExtractor.extractUser(CorrectJWT, Some("website-id")))
+        .thenReturn(Future.successful(Some(user)))
 
       val req = Marshal(UserIn("user", Permissions.AllPermissions))
         .to[RequestEntity]
@@ -47,10 +48,11 @@ class UserRoutesSpec extends BaseHttpSpec {
 
       val domainService = mock[DomainService]
 
-      val user = User("name", Set(), None)
+      val user = User("name", Permissions.AllPermissions, None)
       when(domainService.removeUser("website-id", "user"))
         .thenReturn(Future.successful(noOutput))
-      when(defaultExtractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      when(defaultExtractor.extractUser(CorrectJWT, Some("website-id")))
+        .thenReturn(Future.successful(Some(user)))
 
       HttpRequest(uri = uri, method = HttpMethods.DELETE) ~>
         addCredentials(OAuth2BearerToken(CorrectJWT)) ~>

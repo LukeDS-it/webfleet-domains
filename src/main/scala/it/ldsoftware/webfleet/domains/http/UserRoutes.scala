@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.Route
 import io.circe.generic.auto._
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.utils.{RouteHelper, UserExtractor}
+import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.DomainService
 import it.ldsoftware.webfleet.domains.service.model.NoResult
 
@@ -19,16 +20,18 @@ class UserRoutes(domainService: DomainService, val extractor: UserExtractor) ext
     }
   }
 
-  private def addUser(remaining: String): Route = post {
-    login { _ =>
+  private def addUser(domain: String): Route = post {
+    authorize(domain, Permissions.Users.Add) { _ =>
       entity(as[UserIn]) { user =>
-        svcCall[NoResult](domainService.addUser(remaining, user.userName, user.permissions))
+        svcCall[NoResult](domainService.addUser(domain, user.userName, user.permissions))
       }
     }
   }
 
   private def removeUser(domain: String, user: String): Route = delete {
-    login { _ => svcCall[NoResult](domainService.removeUser(domain, user)) }
+    authorize(domain, Permissions.Users.Remove) { _ =>
+      svcCall[NoResult](domainService.removeUser(domain, user))
+    }
   }
 
 }

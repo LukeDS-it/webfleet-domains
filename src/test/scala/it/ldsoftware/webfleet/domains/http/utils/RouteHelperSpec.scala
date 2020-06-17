@@ -37,16 +37,15 @@ class RouteHelperSpec extends BaseHttpSpec with RouteHelper {
       } ~ path("internal-server-error") {
         svcCall[NoResult](Future.successful(unexpectedError(new Exception(), "Message")))
       }
-    } ~ path("authenticated") {
+    } ~ path("authenticate") {
       login { user =>
-        svcCall[User](Future {
-          if (user.permissions.contains("pass")) success(user)
-          else forbidden
-        })
+        svcCall[User](Future(success(user)))
       }
+    } ~ path("authorize") {
+      authorize("domain", "pass") { user => svcCall[User](Future(success(user))) }
     }
 
-  "The completeWith method" should {
+  "The svcCall method" should {
     "return success data when the service call succeeds" in {
       val request = HttpRequest(uri = "/succeed")
 
@@ -103,10 +102,10 @@ class RouteHelperSpec extends BaseHttpSpec with RouteHelper {
 
   "The authentication utility" should {
     "correctly recognise a valid user" in {
-      val user = User("name", Set("pass"), Some(CorrectJWT))
-      when(extractor.extractUser(CorrectJWT)).thenReturn(Some(user))
+      val user = User("name", Set(), Some(CorrectJWT))
+      when(extractor.extractUser(CorrectJWT, None)).thenReturn(Future.successful(Some(user)))
 
-      val request = HttpRequest(uri = "/authenticated", headers = List())
+      val request = HttpRequest(uri = "/authenticate", headers = List())
 
       request ~> addCredentials(OAuth2BearerToken(CorrectJWT)) ~> testRoutes ~> check {
         status shouldBe StatusCodes.OK
@@ -115,10 +114,10 @@ class RouteHelperSpec extends BaseHttpSpec with RouteHelper {
     }
 
     "refuse an user with wrong permissions" in {
-      when(extractor.extractUser(WrongJWT))
-        .thenReturn(Some(User("name", Set("wrong"), Some(WrongJWT))))
+      when(extractor.extractUser(WrongJWT, Some("domain")))
+        .thenReturn(Future.successful(Some(User("name", Set("no-pass"), Some(WrongJWT)))))
 
-      val request = HttpRequest(uri = "/authenticated")
+      val request = HttpRequest(uri = "/authorize")
 
       request ~> addCredentials(OAuth2BearerToken(WrongJWT)) ~> testRoutes ~> check {
         status shouldBe StatusCodes.Forbidden
@@ -126,9 +125,19 @@ class RouteHelperSpec extends BaseHttpSpec with RouteHelper {
     }
 
     "refuse requests with incorrect JWT" in {
-      when(extractor.extractUser(WrongJWT)).thenReturn(None)
+      when(extractor.extractUser(WrongJWT, None)).thenReturn(Future.successful(None))
 
-      val request = HttpRequest(uri = "/authenticated")
+      val request = HttpRequest(uri = "/authenticate")
+
+      request ~> addCredentials(OAuth2BearerToken(WrongJWT)) ~> testRoutes ~> check {
+        status shouldBe StatusCodes.Unauthorized
+      }
+    }
+
+    "refuse with 401 requests with no jwt on authorization calls" in {
+      when(extractor.extractUser(WrongJWT, Some("domain"))).thenReturn(Future.successful(None))
+
+      val request = HttpRequest(uri = "/authorize")
 
       request ~> addCredentials(OAuth2BearerToken(WrongJWT)) ~> testRoutes ~> check {
         status shouldBe StatusCodes.Unauthorized
@@ -136,7 +145,7 @@ class RouteHelperSpec extends BaseHttpSpec with RouteHelper {
     }
 
     "refuse requests without JWT" in {
-      val request = HttpRequest(uri = "/authenticated")
+      val request = HttpRequest(uri = "/authenticate")
 
       request ~> testRoutes ~> check {
         status shouldBe StatusCodes.Unauthorized
