@@ -1,8 +1,8 @@
 package it.ldsoftware.webfleet.domains.http
 
-import akka.http.scaladsl.server.{Directives, Route}
-import it.ldsoftware.webfleet.domains.http.utils.UserExtractor
-import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService, HealthService}
+import akka.http.scaladsl.server.Route
+import it.ldsoftware.webfleet.domains.http.utils._
+import it.ldsoftware.webfleet.domains.service._
 
 // $COVERAGE-OFF$ specific route tests exist, this is just an aggregate
 class AllRoutes(
@@ -10,13 +10,15 @@ class AllRoutes(
     domainService: DomainService,
     healthService: HealthService,
     readService: DomainReadService
-) extends Directives {
+) extends CORSHelper {
 
   def routes: Route =
-    new DomainRoutes(domainService, readService, extractor).routes ~
-      new UserRoutes(domainService, extractor).routes ~
-      new PermissionsRoutes(domainService, extractor).routes ~
-      new HealthRoutes(healthService, extractor).routes
+    corsHandler(
+      new DomainRoutes(domainService, readService, extractor).routes ~
+        new UserRoutes(domainService, extractor).routes ~
+        new PermissionsRoutes(domainService, extractor).routes ~
+        new HealthRoutes(healthService, extractor).routes
+    )
 
 }
 // $COVERAGE-ON$
