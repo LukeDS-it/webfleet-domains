@@ -6,15 +6,50 @@ on:
       - master
 
 jobs:
-
-
-  release:
+  build:
     if: "!contains(github.event.head_commit.message, 'ci-skip')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Ivy Cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.ivy2/cache
+          key: ${{runner.os}}-sbt-${{hashFiles('**/build.sbt')}}
+      - name: Cache SBT
+        uses: actions/cache@v1
+        with:
+          path: ~/.sbt
+          key: ${{runner.os}}-sbt-${{hashFiles('**/build.sbt')}}
+      - name: Coursier cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/coursier
+          key: ${{ runner.os }}-coursier-cache-${{ matrix.scala }}-${{ hashFiles('**/*.sbt') }}
+          restore-keys: |
+            ${{ runner.os }}-coursier-cache-${{ matrix.scala }}-${{ hashFiles('**/*.sbt') }}-
+            ${{ runner.os }}-coursier-cache-${{ matrix.scala }}-
+            ${{ runner.os }}-coursier-cache-
+      - name: Initialize sbt
+        run: sbt clean
+      - name: Build
+        run: sbt ";compile;test:compile;it:compile"
+      - name: Unit tests
+        run: sbt test
+      - name: Integration tests
+        run: sbt integration
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
       - name: Login on docker registry
-        run: echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
+        run: echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u ldsoftware --password-stdin
       - name: Setup git username
         run: git config user.name LukeDS-it
       - name: Setup git email
@@ -24,4 +59,4 @@ jobs:
       - name: Release
         run: sbt "release skip-tests with-defaults"
         env:
-          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}
+          DOCKER_USERNAME: ldsoftware
