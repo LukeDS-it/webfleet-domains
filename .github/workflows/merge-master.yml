@@ -9,6 +9,7 @@ jobs:
 
 
   release:
+    if: "!contains(github.event.head_commit.message, 'ci-skip')"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -18,6 +19,8 @@ jobs:
         run: git config user.name LukeDS-it
       - name: Setup git email
         run: git config user.email ${{secrets.EMAIL}}
+      - name: Setup git token
+        run: git config user.password ${{secrets.TOKEN}}
       - name: Release
         run: sbt "release skip-tests with-defaults"
         env:
