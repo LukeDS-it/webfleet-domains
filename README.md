@@ -1,5 +1,7 @@
 # webfleet-domains
 ![build](https://github.com/LukeDS-it/webfleet-domains/workflows/build/badge.svg)
+![Docker Image Version (latest by date)](https://img.shields.io/docker/v/ldsoftware/webfleet-domains)
+![GitHub last commit](https://img.shields.io/github/last-commit/LukeDS-it/webfleet-domains)
 
 This microservice is part of Webfleet, a new distributed cms.
 
