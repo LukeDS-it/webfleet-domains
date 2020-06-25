@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-
+    if: "!contains(github.event.head_commit.message, 'ci-skip9)"
     runs-on: ubuntu-latest
 
     steps:
@@ -43,3 +43,15 @@ jobs:
         run: sbt test
       - name: Integration tests
         run: sbt integration
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Login on docker registry
+        run: echo "${{secrets.DOCKER_PASSWORD}}" | docker login -u ${{secrets.DOCKER_USERNAME}} --password-stdin
+      - name: Release
+        run: sbt "release skip-tests with-defaults"
+        env:
+          DOCKER_USERNAME: ${{secrets.DOCKER_USERNAME}}

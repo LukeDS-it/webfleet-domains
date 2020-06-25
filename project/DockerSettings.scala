@@ -30,7 +30,8 @@ object DockerSettings extends LinuxKeys {
     unmanagedResourceDirectories in Test += baseDirectory.value / "scripts",
     javaOptions in Universal += "-Dpidfile.path=/dev/null",
     dockerBaseImage := "openjdk:8-jre-alpine",
-    dockerRepository := Some("index.docker.io"),
+    dockerRepository := sys.env.get("DOCKER_REPO"),
+    dockerUsername := sys.env.get("DOCKER_USERNAME"),
     dockerUpdateLatest := false,
     daemonUser in Docker := "daemon",
     dockerLabels := Map(
@@ -58,6 +59,7 @@ object DockerSettings extends LinuxKeys {
         case ep @ ExecCmd("ENTRYPOINT", _*) =>
           Seq(
             Cmd("RUN", "chmod +x /opt/docker/docker-entrypoint.sh"),
+            Cmd("RUN", "chmod -R 755 /opt/docker/"),
             ExecCmd("ENTRYPOINT", "/opt/docker/docker-entrypoint.sh" :: ep.args.toList: _*)
           )
         case other => Seq(other)
@@ -66,7 +68,7 @@ object DockerSettings extends LinuxKeys {
     dockerImageCreationTask := (publishLocal in Docker).value,
     variablesForSubstitution := Map(
       "IP_HOST" -> sys.env.getOrElse("IP_DOCKER_HOST", java.net.InetAddress.getLocalHost.getHostAddress)
-    ),
+    )
   )
 
 }
