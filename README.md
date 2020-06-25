@@ -18,7 +18,8 @@ You will then need to set the correct environment variables, and then run `sbt r
 
 # Running on Docker
 
-A docker container will soon be available.
+Docker version is available: https://hub.docker.com/repository/docker/ldsoftware/webfleet-domains
+Setup the environment variables and you're good to go.
 
 # Environment
 
