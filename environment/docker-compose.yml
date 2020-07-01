@@ -18,17 +18,12 @@ services:
       - MOCKSERVER_INITIALIZATION_JSON_PATH=/config/mockserver-auth0.json
     volumes:
       - ../src/it/resources:/config
-  zookeeper:
-    image: wurstmeister/zookeeper
-    ports:
-      - "2181:2181"
-  kafka:
-    image: wurstmeister/kafka
-    ports:
-      - "9092:9092"
-    environment:
-      KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
-      KAFKA_CREATE_TOPICS: "webfleet-domains:1:1"
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  rabbitmq:
+    image: rabbitmq:3.8.5-management
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - ./rabbitmq/etc/:/etc/rabbitmq/
+      - ./rabbitmq/data/:/var/lib/rabbitmq/
+      - ./rabbitmq/logs/:/var/log/rabbitmq/
+    ports:
+      - 5672:5672
+      - 15672:15672

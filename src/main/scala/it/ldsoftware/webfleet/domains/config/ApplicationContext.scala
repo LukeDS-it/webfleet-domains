@@ -3,15 +3,16 @@ package it.ldsoftware.webfleet.domains.config
 import java.sql.Connection
 
 import akka.actor.typed.ActorSystem
+import akka.actor.{ActorSystem => ClassicSystem}
 import akka.util.Timeout
 import com.auth0.jwk.{JwkProvider, JwkProviderBuilder}
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
-import it.ldsoftware.webfleet.domains.flows.consumers.{KafkaEventConsumer, ReadSideEventConsumer}
+import it.ldsoftware.webfleet.domains.flows.consumers.{AMQPEventConsumer, ReadSideEventConsumer}
 import it.ldsoftware.webfleet.domains.flows.{ContentEventConsumer, OffsetManager}
 import it.ldsoftware.webfleet.domains.http.utils._
 import it.ldsoftware.webfleet.domains.service.impl.{BasicHealthService, SlickDomainReadService}
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, HealthService}
-import org.apache.kafka.clients.producer.KafkaProducer
+import it.ldsoftware.webfleet.domains.util.RabbitMQUtils
 
 import scala.concurrent.ExecutionContext
 
@@ -20,6 +21,8 @@ class ApplicationContext(appConfig: AppConfig)(
     system: ActorSystem[_],
     timeout: Timeout
 ) {
+
+  implicit val classic: ClassicSystem = system.classicSystem
 
   lazy val db: Database = Database.forConfig("slick.db")
 
@@ -43,10 +46,9 @@ class ApplicationContext(appConfig: AppConfig)(
 
   lazy val readSideEventConsumer = new ReadSideEventConsumer(readService)
 
-  lazy val kafkaEventConsumer = new KafkaEventConsumer(
-    new KafkaProducer[String, String](appConfig.kafkaProperties),
-    appConfig.domainTopic
-  )
+  lazy val amqpEventConsumer = new AMQPEventConsumer(amqp, appConfig.domainDestination)
 
-  lazy val consumers: Seq[ContentEventConsumer] = Seq(readSideEventConsumer, kafkaEventConsumer)
+  lazy val consumers: Seq[ContentEventConsumer] = Seq(readSideEventConsumer, amqpEventConsumer)
+
+  lazy val amqp = new RabbitMQUtils(appConfig.amqpUrl, appConfig.exchange)
 }
