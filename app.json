@@ -6,15 +6,6 @@
   "env": {
     "LOG_FORMAT": {
       "value": "HEROKU"
-    },
-    "AUTH_DOMAIN": {
-      "value": "https://dev-env.webfleet.com"
-    },
-    "AUTH_AUDIENCE": {
-      "value": "https://ldsoftware.eu.auth0.com/"
-    },
-    "AUTH_ISSUER": {
-      "value": "https://ldsoftware.eu.auth0.com/"
     }
   },
   "formation": {
