@@ -1,7 +1,6 @@
 package it.ldsoftware.webfleet.domains.config
 
 import java.time.Duration
-import java.util.Properties
 
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
@@ -20,29 +19,11 @@ case class AppConfig(private val config: Config) extends LazyLogging {
     config.appString("auth0.issuer")
   )
 
-  lazy val kafkaProperties: Properties = {
-    val props = new Properties
+  lazy val amqpUrl: String = config.appString("amqp.url")
 
-    props.put("bootstrap.servers", config.appString("kafka.broker-list"))
-    props.put("client.id", "webfleet-domains")
-    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
+  lazy val exchange: String = config.appString("amqp.exchange")
 
-    if (config.appBoolean("kafka.sasl")) {
-      val kafkaUser = config.appString("kafka.user")
-      val kafkaPass = config.appString("kafka.pass")
-      val jaasCfg =
-        s"""org.apache.kafka.common.security.scram.ScramLoginModule required username="$kafkaUser" password="$kafkaPass";"""
-
-      props.put("security.protocol", "SASL_SSL")
-      props.put("sasl.mechanism", "SCRAM-SHA-256")
-      props.put("sasl.jaas.config", jaasCfg)
-    }
-
-    props
-  }
-
-  lazy val domainTopic: String = config.appString("kafka.topics.domains")
+  lazy val domainDestination: String = config.appString("amqp.destinations.domains")
 
   def getConfig: Config = config
 

@@ -1,8 +1,5 @@
 package it.ldsoftware.webfleet.domains
 
-import java.time.Duration
-import java.util.{Collections, Properties}
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model.headers.Location
@@ -11,22 +8,23 @@ import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.http.scaladsl.{Http, HttpExt}
 import akka.stream.Materializer
 import com.auth0.jwk.{JwkProvider, JwkProviderBuilder}
-import com.dimafeng.testcontainers.{Container, ForAllTestContainer, MultipleContainers}
+import com.dimafeng.testcontainers._
 import com.typesafe.config.ConfigFactory
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
+import it.ldsoftware.webfleet.domains.actors.Domain.{Created, Event}
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.model.out.PermissionInfo
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
-import it.ldsoftware.webfleet.domains.security.Permissions
+import it.ldsoftware.webfleet.domains.security.{Permissions, User}
 import it.ldsoftware.webfleet.domains.service.model.ApplicationHealth
 import it.ldsoftware.webfleet.domains.testcontainers._
+import it.ldsoftware.webfleet.domains.util.{RabbitEnvelope, RabbitMQUtils}
 import it.ldsoftware.webfleet.domains.utils.ResponseUtils
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.scalatest.GivenWhenThen
-import org.scalatest.concurrent.{Eventually, IntegrationPatience, ScalaFutures}
+import org.scalatest.concurrent._
 import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.Network
@@ -55,7 +53,7 @@ class WebfleetDomainsAppSpec
 
   lazy val auth0Server = new Auth0MockContainer(network, provider, jwkKeyId)
 
-  lazy val kafka = new CustomKafkaContainer(network)
+  lazy val rabbit = new RabbitMQContainer(network)
 
   lazy val targetContainer =
     new TargetContainer(
@@ -63,7 +61,8 @@ class WebfleetDomainsAppSpec
       globalNet = network
     )
 
-  override val container: Container = MultipleContainers(pgsql, auth0Server, kafka, targetContainer)
+  override val container: Container =
+    MultipleContainers(pgsql, auth0Server, rabbit, targetContainer)
 
   implicit lazy val system: ActorSystem = ActorSystem("test-webfleet-domains")
   implicit lazy val materializer: Materializer = Materializer(system)
@@ -324,17 +323,11 @@ class WebfleetDomainsAppSpec
     }
   }
 
-  Feature("The service sends data to a kafka topic") {
-    Scenario("When an operation is executed, data is published on the topic") {
-      val props: Properties = new Properties()
-      props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
-      props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
-      props.put("bootstrap.servers", s"http://localhost:${kafka.mappedPort(9093)}")
-      props.put("group.id", "webfleet-test")
-      props.put("enable.auto.commit", "true")
-
-      val kafkaConsumer = new KafkaConsumer[String, String](props)
-      kafkaConsumer.subscribe(Collections.singletonList("webfleet-domains"))
+  Feature("The service sends data to a rabbitmq queue") {
+    Scenario("When an operation is executed, data is published on the exchange") {
+      Given("A queue subscribed to the exchange")
+      val utils = new RabbitMQUtils("amqp://localhost", "webfleet")
+      val queue = utils.createQueueFor("webfleet-domains")
 
       val jwt = auth0Server.jwtHeader("superuser", Permissions.AllPermissions)
 
@@ -346,9 +339,23 @@ class WebfleetDomainsAppSpec
 
       createDomain(form, jwt)
 
+      var actual: Option[RabbitEnvelope[Event]] = None
+      utils.consume(queue) { r => actual = r }
+
       eventually {
-        val records = kafkaConsumer.poll(Duration.ofSeconds(1L))
-        records.count() should be >= 1
+        actual shouldBe Some(
+          RabbitEnvelope(
+            form.id,
+            Created(
+              form,
+              User(
+                "superuser",
+                Permissions.AllPermissions,
+                Some(jwt.value.substring("Bearer ".length))
+              )
+            )
+          )
+        )
       }
     }
   }

@@ -4,5 +4,5 @@
 *.iml
 target/
 environment/pgsql
-environment/zookeeper
-environment/kafka
+environment/rabbitmq/data
+environment/rabbitmq/logs
