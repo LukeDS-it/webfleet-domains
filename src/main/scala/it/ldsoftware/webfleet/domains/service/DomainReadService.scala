@@ -1,7 +1,8 @@
 package it.ldsoftware.webfleet.domains.service
 
+import it.ldsoftware.webfleet.commons.service.model.ServiceResult
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
-import it.ldsoftware.webfleet.domains.service.model.{DomainFilter, ServiceResult}
+import it.ldsoftware.webfleet.domains.service.model.DomainFilter
 
 import scala.concurrent.Future
 

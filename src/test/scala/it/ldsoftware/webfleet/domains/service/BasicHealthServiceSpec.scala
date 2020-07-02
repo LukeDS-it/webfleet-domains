@@ -1,7 +1,7 @@
 package it.ldsoftware.webfleet.domains.service
 
+import it.ldsoftware.webfleet.commons.service.model._
 import it.ldsoftware.webfleet.domains.service.impl.BasicHealthService
-import it.ldsoftware.webfleet.domains.service.model._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.matchers.should.Matchers
@@ -27,7 +27,7 @@ class BasicHealthServiceSpec
       when(db.run(BasicHealthService.checkAction)).thenReturn(Future.successful(Vector(1)))
 
       def subject = new BasicHealthService(db)
-      subject.checkHealth.futureValue shouldBe success(ApplicationHealth("ok"))
+      subject.checkHealth.futureValue shouldBe success(ApplicationHealth(Map("pgsql" -> "ok")))
     }
 
     "return negatively if some services are not working" in {
@@ -38,7 +38,7 @@ class BasicHealthServiceSpec
         })
 
       def subject = new BasicHealthService(db)
-      subject.checkHealth.futureValue shouldBe serviceUnavailable(ApplicationHealth("PGSQL Error"))
+      subject.checkHealth.futureValue shouldBe serviceUnavailable(ApplicationHealth(Map("pgsql" -> "PGSQL Error")))
     }
 
   }

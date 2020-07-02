@@ -1,8 +1,9 @@
 package it.ldsoftware.webfleet.domains.actors
 
+import it.ldsoftware.webfleet.commons.security.User
 import it.ldsoftware.webfleet.domains.actors.Domain._
 import it.ldsoftware.webfleet.domains.actors.model._
-import it.ldsoftware.webfleet.domains.security.{Permissions, User}
+import it.ldsoftware.webfleet.domains.security.Permissions
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

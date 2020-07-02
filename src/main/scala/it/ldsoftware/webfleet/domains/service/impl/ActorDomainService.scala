@@ -4,11 +4,11 @@ import java.time.Duration
 
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.util.Timeout
+import it.ldsoftware.webfleet.commons.security.User
+import it.ldsoftware.webfleet.commons.service.model._
 import it.ldsoftware.webfleet.domains.actors.Domain
-import it.ldsoftware.webfleet.domains.actors.model.{CreateForm, UpdateForm, WebDomain}
-import it.ldsoftware.webfleet.domains.security.User
+import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.service.DomainService
-import it.ldsoftware.webfleet.domains.service.model._
 
 import scala.concurrent.{ExecutionContext, Future}
 

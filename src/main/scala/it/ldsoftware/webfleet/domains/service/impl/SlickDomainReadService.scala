@@ -1,6 +1,7 @@
 package it.ldsoftware.webfleet.domains.service.impl
 
 import com.typesafe.scalalogging.LazyLogging
+import it.ldsoftware.webfleet.commons.service.model._
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.read.dbio.AccessGrants
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant

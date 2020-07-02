@@ -1,6 +1,6 @@
 package it.ldsoftware.webfleet.domains.service
 
-import it.ldsoftware.webfleet.domains.service.model.{ApplicationHealth, ServiceResult}
+import it.ldsoftware.webfleet.commons.service.model._
 
 import scala.concurrent.Future
 

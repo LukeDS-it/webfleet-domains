@@ -2,6 +2,7 @@ package it.ldsoftware.webfleet.domains.http.utils
 
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
+import it.ldsoftware.webfleet.commons.http.UserExtractor
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec

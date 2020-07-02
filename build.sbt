@@ -14,6 +14,10 @@ val circeVersion = "0.13.0"
 val janinoVersion = "3.1.0"
 val postgresqlVersion = "42.2.12"
 val slickVersion = "3.3.2"
+val webfleetCommonsVersion = "0.1.1"
+val slickPgVersion = "0.19.0"
+val liquibaseVersion = "3.9.0"
+val amqpClientVersion = "5.9.0"
 
 val akkaDependencies = Seq(
   "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
@@ -48,13 +52,14 @@ val baseDependencies = Seq(
 )
 
 val customDependencies = Seq(
+  "it.ldsoftware" %% "webfleet-commons" % webfleetCommonsVersion,
   "org.postgresql" % "postgresql" % postgresqlVersion,
   "com.typesafe.slick" %% "slick" % slickVersion,
-  "com.github.tminglei" %% "slick-pg" % "0.19.0",
+  "com.github.tminglei" %% "slick-pg" % slickPgVersion,
   "com.auth0" % "jwks-rsa" % "0.8.2",
   "com.auth0" % "java-jwt" % "3.8.1",
-  "org.liquibase" % "liquibase-core" % "3.9.0",
-  "com.rabbitmq" % "amqp-client" % "5.9.0",
+  "org.liquibase" % "liquibase-core" % liquibaseVersion,
+  "com.rabbitmq" % "amqp-client" % amqpClientVersion,
   "com.dimafeng" %% "testcontainers-scala-postgresql" % testcontainersScalaVersion % "it",
   "org.testcontainers" % "mockserver" % testcontainersVersion % "it",
 )
@@ -66,6 +71,7 @@ lazy val root = (project in file("."))
   .settings(CommonSettings.settings)
   .settings(DockerSettings.settings)
   .settings(ReleaseSettings.settings)
+  .settings(ResolverSettings.settings)
   .settings(
     organization := "it.ldsoftware",
     name := "webfleet-domains",

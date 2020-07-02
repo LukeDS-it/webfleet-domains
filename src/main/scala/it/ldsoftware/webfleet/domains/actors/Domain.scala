@@ -1,13 +1,15 @@
 package it.ldsoftware.webfleet.domains.actors
 
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
+import akka.actor.typed._
+import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect}
+import akka.persistence.typed.scaladsl._
+import it.ldsoftware.webfleet.commons.security.User
+import it.ldsoftware.webfleet.commons.service.model.ValidationError
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.actors.serialization.CborSerializable
 import it.ldsoftware.webfleet.domains.flows.DomainFlow
-import it.ldsoftware.webfleet.domains.security.{Permissions, User}
+import it.ldsoftware.webfleet.domains.security.Permissions
 
 /**
   * This object contains actor logic for any content of the website.
