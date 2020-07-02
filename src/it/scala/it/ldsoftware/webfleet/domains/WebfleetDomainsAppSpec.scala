@@ -12,14 +12,15 @@ import com.dimafeng.testcontainers._
 import com.typesafe.config.ConfigFactory
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
+import it.ldsoftware.webfleet.commons.security.User
+import it.ldsoftware.webfleet.commons.service.model.{ApplicationHealth, ValidationError}
 import it.ldsoftware.webfleet.domains.actors.Domain.{Created, Event}
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
 import it.ldsoftware.webfleet.domains.http.model.out.PermissionInfo
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
-import it.ldsoftware.webfleet.domains.security.{Permissions, User}
-import it.ldsoftware.webfleet.domains.service.model.ApplicationHealth
+import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.testcontainers._
 import it.ldsoftware.webfleet.domains.util.{RabbitEnvelope, RabbitMQUtils}
 import it.ldsoftware.webfleet.domains.utils.ResponseUtils
@@ -95,7 +96,7 @@ class WebfleetDomainsAppSpec
         .flatMap(Unmarshal(_).to[ApplicationHealth])
         .futureValue
 
-      result shouldBe ApplicationHealth("ok")
+      result shouldBe ApplicationHealth(Map("pgsql" -> "ok"))
     }
   }
 
