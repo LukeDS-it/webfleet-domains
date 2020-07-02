@@ -2,6 +2,7 @@ package it.ldsoftware.webfleet.domains.http.utils
 import akka.actor.typed.ActorSystem
 import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.util.Timeout
+import it.ldsoftware.webfleet.commons.http.PermissionProvider
 import it.ldsoftware.webfleet.domains.actors.Domain._
 import it.ldsoftware.webfleet.domains.http.model.out.PermissionInfo
 

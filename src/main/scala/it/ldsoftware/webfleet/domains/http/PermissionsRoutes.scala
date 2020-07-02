@@ -2,9 +2,9 @@ package it.ldsoftware.webfleet.domains.http
 
 import akka.http.scaladsl.server.Route
 import io.circe.generic.auto._
+import it.ldsoftware.webfleet.commons.http.{RouteHelper, UserExtractor}
 import it.ldsoftware.webfleet.domains.actors.model.WebDomain
 import it.ldsoftware.webfleet.domains.http.model.out.PermissionInfo
-import it.ldsoftware.webfleet.domains.http.utils.{RouteHelper, UserExtractor}
 import it.ldsoftware.webfleet.domains.service.DomainService
 
 class PermissionsRoutes(domainService: DomainService, val extractor: UserExtractor)

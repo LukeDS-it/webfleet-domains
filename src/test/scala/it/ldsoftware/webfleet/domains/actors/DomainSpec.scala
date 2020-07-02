@@ -6,9 +6,11 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
 import akka.persistence.testkit.scaladsl.EventSourcedBehaviorTestKit
 import com.typesafe.config.{Config, ConfigFactory}
+import it.ldsoftware.webfleet.commons.security.User
+import it.ldsoftware.webfleet.commons.service.model.ValidationError
 import it.ldsoftware.webfleet.domains.actors.Domain._
 import it.ldsoftware.webfleet.domains.actors.model._
-import it.ldsoftware.webfleet.domains.security.{Permissions, User}
+import it.ldsoftware.webfleet.domains.security.Permissions
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.wordspec.AnyWordSpecLike
 

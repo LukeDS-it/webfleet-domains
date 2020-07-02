@@ -1,5 +1,6 @@
 package it.ldsoftware.webfleet.domains.actors.model
 
+import it.ldsoftware.webfleet.commons.service.model.ValidationError
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

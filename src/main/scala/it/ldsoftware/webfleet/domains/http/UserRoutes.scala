@@ -2,11 +2,11 @@ package it.ldsoftware.webfleet.domains.http
 
 import akka.http.scaladsl.server.Route
 import io.circe.generic.auto._
+import it.ldsoftware.webfleet.commons.http.{RouteHelper, UserExtractor}
+import it.ldsoftware.webfleet.commons.service.model.NoResult
 import it.ldsoftware.webfleet.domains.http.model.in.UserIn
-import it.ldsoftware.webfleet.domains.http.utils.{RouteHelper, UserExtractor}
 import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.DomainService
-import it.ldsoftware.webfleet.domains.service.model.NoResult
 
 class UserRoutes(domainService: DomainService, val extractor: UserExtractor) extends RouteHelper {
 

@@ -6,6 +6,7 @@ import akka.actor.typed.ActorSystem
 import akka.actor.{ActorSystem => ClassicSystem}
 import akka.util.Timeout
 import com.auth0.jwk.{JwkProvider, JwkProviderBuilder}
+import it.ldsoftware.webfleet.commons.http.{Auth0UserExtractor, UserExtractor}
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 import it.ldsoftware.webfleet.domains.flows.consumers.{AMQPEventConsumer, ReadSideEventConsumer}
 import it.ldsoftware.webfleet.domains.flows.{ContentEventConsumer, OffsetManager}

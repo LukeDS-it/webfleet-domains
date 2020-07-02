@@ -1,7 +1,7 @@
 package it.ldsoftware.webfleet.domains.http
 
 import akka.http.scaladsl.server.Route
-import it.ldsoftware.webfleet.domains.http.utils._
+import it.ldsoftware.webfleet.commons.http._
 import it.ldsoftware.webfleet.domains.service._
 
 // $COVERAGE-OFF$ specific route tests exist, this is just an aggregate

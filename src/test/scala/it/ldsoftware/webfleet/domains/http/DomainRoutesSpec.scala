@@ -4,10 +4,12 @@ import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.OAuth2BearerToken
 import io.circe.generic.auto._
+import it.ldsoftware.webfleet.commons.security.User
+import it.ldsoftware.webfleet.commons.service.model._
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.http.utils.BaseHttpSpec
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
-import it.ldsoftware.webfleet.domains.security.{Permissions, User}
+import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.service.model._
 import it.ldsoftware.webfleet.domains.service.{DomainReadService, DomainService}
 import org.mockito.Mockito.{verify, when}

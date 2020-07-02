@@ -1,8 +1,8 @@
 package it.ldsoftware.webfleet.domains.service
 
-import it.ldsoftware.webfleet.domains.actors.model.{CreateForm, UpdateForm, WebDomain}
-import it.ldsoftware.webfleet.domains.security.User
-import it.ldsoftware.webfleet.domains.service.model.{NoResult, ServiceResult}
+import it.ldsoftware.webfleet.commons.security.User
+import it.ldsoftware.webfleet.commons.service.model.{NoResult, ServiceResult}
+import it.ldsoftware.webfleet.domains.actors.model._
 
 import scala.concurrent.Future
 
