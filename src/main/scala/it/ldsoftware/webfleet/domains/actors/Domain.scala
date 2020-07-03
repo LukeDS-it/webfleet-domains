@@ -8,7 +8,6 @@ import it.ldsoftware.webfleet.commons.security.User
 import it.ldsoftware.webfleet.commons.service.model.ValidationError
 import it.ldsoftware.webfleet.domains.actors.model._
 import it.ldsoftware.webfleet.domains.actors.serialization.CborSerializable
-import it.ldsoftware.webfleet.domains.flows.DomainFlow
 import it.ldsoftware.webfleet.domains.security.Permissions
 
 /**
@@ -18,6 +17,7 @@ object Domain {
 
   type Requester = ActorRef[Response]
 
+  val Tag: String = "domain"
   val Key: EntityTypeKey[Command] = EntityTypeKey[Command]("WebDomain")
 
   sealed trait Command extends CborSerializable {
@@ -168,7 +168,7 @@ object Domain {
         commandHandler = (state, command) => state.handle(command),
         eventHandler = (state, event) => state.process(event)
       )
-      .withTagger(_ => Set(DomainFlow.Tag))
+      .withTagger(_ => Set(Tag))
 
   /**
     * This function initializes the Content actor in the cluster sharding

@@ -8,10 +8,12 @@ import akka.cluster.sharding.typed.scaladsl.ClusterSharding
 import akka.persistence.jdbc.query.scaladsl.JdbcReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.util.Timeout
-import it.ldsoftware.webfleet.domains.actors.{Domain, EventProcessor}
+import it.ldsoftware.webfleet.commons.actors.EventProcessor
+import it.ldsoftware.webfleet.commons.flows.EventFlow
+import it.ldsoftware.webfleet.domains.actors.Domain
+import it.ldsoftware.webfleet.domains.actors.Domain.Event
 import it.ldsoftware.webfleet.domains.config.{AppConfig, ApplicationContext}
 import it.ldsoftware.webfleet.domains.database.Migrations
-import it.ldsoftware.webfleet.domains.flows.DomainFlow
 import it.ldsoftware.webfleet.domains.http.{AllRoutes, WebfleetServer}
 import it.ldsoftware.webfleet.domains.service.impl._
 
@@ -34,7 +36,7 @@ object Guardian {
 
       Domain.init(system)
       appContext.consumers
-        .map(new DomainFlow(readJournal, appContext.offsetManager, _))
+        .map(new EventFlow[Event](Domain.Tag, readJournal, appContext.offsetManager, _))
         .foreach(EventProcessor.init(system, _))
 
       val domainService = new ActorDomainService(timeout, sharding)
