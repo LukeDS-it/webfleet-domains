@@ -1,11 +1,12 @@
 package it.ldsoftware.webfleet.domains.flows
 
 import akka.persistence.query.{Offset, Sequence}
+import it.ldsoftware.webfleet.commons.flows.OffsetManager
 import it.ldsoftware.webfleet.domains.database.ExtendedProfile.api._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class OffsetManager(db: Database)(implicit ec: ExecutionContext) {
+class JdbcOffsetManager(db: Database)(implicit ec: ExecutionContext) extends OffsetManager {
   def writeOffset(consumer: String, offset: Offset): Future[Int] =
     db.run(writeOffsetSql(consumer, offset))
 

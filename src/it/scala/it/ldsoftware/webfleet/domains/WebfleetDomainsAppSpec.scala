@@ -12,6 +12,7 @@ import com.dimafeng.testcontainers._
 import com.typesafe.config.ConfigFactory
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
+import it.ldsoftware.webfleet.commons.amqp.{AmqpEnvelope, RabbitMqChannel}
 import it.ldsoftware.webfleet.commons.security.User
 import it.ldsoftware.webfleet.commons.service.model.{ApplicationHealth, ValidationError}
 import it.ldsoftware.webfleet.domains.actors.Domain.{Created, Event}
@@ -22,7 +23,6 @@ import it.ldsoftware.webfleet.domains.http.model.out.PermissionInfo
 import it.ldsoftware.webfleet.domains.read.model.AccessGrant
 import it.ldsoftware.webfleet.domains.security.Permissions
 import it.ldsoftware.webfleet.domains.testcontainers._
-import it.ldsoftware.webfleet.domains.util.{RabbitEnvelope, RabbitMQUtils}
 import it.ldsoftware.webfleet.domains.utils.ResponseUtils
 import org.scalatest.GivenWhenThen
 import org.scalatest.concurrent._
@@ -30,7 +30,7 @@ import org.scalatest.featurespec.AnyFeatureSpec
 import org.scalatest.matchers.should.Matchers
 import org.testcontainers.containers.Network
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class WebfleetDomainsAppSpec
     extends AnyFeatureSpec
@@ -327,7 +327,7 @@ class WebfleetDomainsAppSpec
   Feature("The service sends data to a rabbitmq queue") {
     Scenario("When an operation is executed, data is published on the exchange") {
       Given("A queue subscribed to the exchange")
-      val utils = new RabbitMQUtils("amqp://localhost", "webfleet")
+      val utils = new RabbitMqChannel("amqp://localhost", "webfleet")
       val queue = utils.createQueueFor("webfleet-domains")
 
       val jwt = auth0Server.jwtHeader("superuser", Permissions.AllPermissions)
@@ -340,12 +340,21 @@ class WebfleetDomainsAppSpec
 
       createDomain(form, jwt)
 
-      var actual: Option[RabbitEnvelope[Event]] = None
-      utils.consume(queue) { r => actual = r }
-
+      var actual: Option[AmqpEnvelope[Event]] = None
+      utils.getConsumerFor[Event](queue).consume {
+        case Left(value)  => Future {
+          actual = None
+          logger.error(s"Error during test", value)
+          akka.Done
+        }
+        case Right(value) => Future {
+          actual = Some(value)
+          akka.Done
+        }
+      }
       eventually {
         actual shouldBe Some(
-          RabbitEnvelope(
+          AmqpEnvelope(
             form.id,
             Created(
               form,
