@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 // $COVERAGE-OFF$
 class ReadSideEventConsumer(readService: DomainReadService)(implicit ec: ExecutionContext)
-  extends EventConsumer[Event]
+    extends EventConsumer[Event]
     with LazyLogging {
 
   override def consume(actorId: String, event: Domain.Event): Future[Done] = event match {
